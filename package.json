@@ -1,0 +1,8 @@
+{
+  "name": "baby-kisekae-app",
+  "version": "1.0.0",
+  "description": "Baby Kisekae Maker",
+  "scripts": {
+    "start": "node"
+  }
+}
