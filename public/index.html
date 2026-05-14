@@ -256,11 +256,9 @@
         if (!res.ok) throw new Error(data.error || 'ステータス確認に失敗しました');
 
         if (data.status === 'completed') {
-          // 成功時: まず画像を画面に表示する（この時点ではFashn.aiのURL）
           resultImage.src = data.output[0];
           
-          // 【重要】画像をブラウザに読み込ませた直後、Fashn.aiのサーバーから履歴を削除するリクエストを裏側で送信する
-          // ※画像をBase64等のローカルデータに変換してから削除するのが確実ですが、今回はFashnのURLが一定期間キャッシュされる性質を利用して、見た目上すぐに表示させつつ裏で削除命令を出します。
+          // 画像表示直後にFashn.aiのサーバーから履歴を削除
           fetch('/api/generate', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -306,25 +304,44 @@
       if (subStatus) loadingSubStatus.textContent = subStatus;
     }
 
-    const addPaddingToImage = (dataUri, isBib) => {
+    // 【改善】画像を自動リサイズし、大きすぎる画像による Vercel のエラーを防ぐ
+    const processImage = (dataUri, isBib) => {
       return new Promise((resolve) => {
-        if (!isBib) {
-          resolve(dataUri);
-          return;
-        }
         const img = new Image();
         img.onload = () => {
           const canvas = document.createElement('canvas');
-          const paddingRatio = 2.0; 
-          canvas.width = img.width * paddingRatio;
-          canvas.height = img.height * paddingRatio;
-          const ctx = canvas.getContext('2d');
-          
-          const x = (canvas.width - img.width) / 2;
-          const y = canvas.height * 0.25; 
-          ctx.drawImage(img, x, y);
-          
-          resolve(canvas.toDataURL('image/png'));
+          let w = img.width;
+          let h = img.height;
+
+          // 印刷も視野に入れ、リサイズの上限を2048pxに引き上げ（ディテール保持）
+          const MAX_SIZE = 2048;
+          if (w > MAX_SIZE || h > MAX_SIZE) {
+            const ratio = Math.min(MAX_SIZE / w, MAX_SIZE / h);
+            w = Math.floor(w * ratio);
+            h = Math.floor(h * ratio);
+          }
+
+          if (!isBib) {
+            // ウェアの場合：そのままの比率で書き出し、JPEG品質を0.95に上げて高画質化
+            canvas.width = w;
+            canvas.height = h;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, w, h);
+            resolve(canvas.toDataURL('image/jpeg', 0.95));
+          } else {
+            // スタイの場合：錯覚させるための余白を追加する
+            const paddingRatio = 2.0; 
+            canvas.width = w * paddingRatio;
+            canvas.height = h * paddingRatio;
+            const ctx = canvas.getContext('2d');
+            
+            const x = (canvas.width - w) / 2;
+            const y = canvas.height * 0.25; 
+            ctx.drawImage(img, x, y, w, h);
+            
+            // 色味を保つためPNGで書き出す
+            resolve(canvas.toDataURL('image/png'));
+          }
         };
         img.src = dataUri;
       });
@@ -347,7 +364,8 @@
       updateProgress(10, "画像を最適化中...", "アイテムの種類に合わせて調整しています");
 
       try {
-        const processedImageBase64 = await addPaddingToImage(currentDataUri, itemType === 'bib');
+        // ここで画像のリサイズと余白調整を実行
+        const processedImageBase64 = await processImage(currentDataUri, itemType === 'bib');
 
         updateProgress(20, "AIにリクエストを送信中...", "ベビーちゃんのモデル画像を生成しています");
 
@@ -366,6 +384,8 @@
         });
         
         const data = await res.json();
+        
+        // もしエラーが発生したら、内容を画面に表示
         if (!res.ok) throw new Error(data.error || '通信エラーが発生しました');
 
         const jobId = data.jobId;
