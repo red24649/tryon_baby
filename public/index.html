@@ -257,14 +257,6 @@
 
         if (data.status === 'completed') {
           resultImage.src = data.output[0];
-          
-          // 画像表示直後にFashn.aiのサーバーから履歴を削除
-          fetch('/api/generate', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'delete', jobId: jobId })
-          }).catch(e => console.error("削除リクエストエラー", e));
-
           updateProgress(100, "完成しました！", "表示の準備をしています...");
           setTimeout(() => {
             loading.classList.add('hidden');
@@ -272,13 +264,12 @@
             generateBtn.disabled = false;
             resultContainer.scrollIntoView({ behavior: 'smooth' });
           }, 1000);
-          
         } else if (data.status === 'failed') {
           throw new Error(data.error?.message || 'AI側で合成に失敗しました。別の画像でお試しください。');
         } else {
           updateProgress(
             Math.min(parseInt(progressBar.style.width) + 15, 90),
-            "がんばって合成しています...",
+            "AIがアイテムを合成しています...",
             "高精度な処理のため、もう少しかかります"
           );
           setTimeout(() => checkStatus(jobId), 4000);
@@ -312,8 +303,8 @@
           let w = img.width;
           let h = img.height;
 
-          // Vercelの制限(4.5MB)を確実にクリアするためのバランス調整
-          const MAX_SIZE = 1500;
+          // Vercelの制限を確実にクリアするためのバランス調整（1024px）
+          const MAX_SIZE = 1024;
           if (w > MAX_SIZE || h > MAX_SIZE) {
             const ratio = Math.min(MAX_SIZE / w, MAX_SIZE / h);
             w = Math.floor(w * ratio);
@@ -325,7 +316,8 @@
             canvas.height = h;
             const ctx = canvas.getContext('2d');
             ctx.drawImage(img, 0, 0, w, h);
-            resolve(canvas.toDataURL('image/jpeg', 0.92));
+            // 画質とサイズのバランスが良い 0.85 に設定
+            resolve(canvas.toDataURL('image/jpeg', 0.85));
           } else {
             const paddingRatio = 2.0; 
             canvas.width = w * paddingRatio;
@@ -340,7 +332,7 @@
             const y = canvas.height * 0.25; 
             ctx.drawImage(img, x, y, w, h);
             
-            resolve(canvas.toDataURL('image/jpeg', 0.90));
+            resolve(canvas.toDataURL('image/jpeg', 0.85));
           }
         };
         img.src = dataUri;
@@ -386,6 +378,9 @@
         // 追加: JSON変換前に通信自体のエラーを検知する
         if (!res.ok) {
           const errText = await res.text();
+          if (res.status === 413 || errText.includes('Request Entity Too Large')) {
+            throw new Error('画像のデータサイズが大きすぎます。別の画像でお試しください。');
+          }
           throw new Error(`通信エラーが発生しました: ${errText}`);
         }
         
