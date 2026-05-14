@@ -29,12 +29,6 @@
     <div class="mb-8">
       <label class="block text-sm font-bold text-gray-800 mb-2">&#x2460; 着せたいアイテムの画像をアップロード</label>
 
-      <!--
-      <div class="bg-yellow-50 border-l-4 border-yellow-400 p-3 mb-3 text-xs text-yellow-800 rounded-r-lg">
-        <strong>💡 色を正確に再現するコツ:</strong><br>
-        複数の服が写っているとAIの処理で色が混ざってしまいます。<strong>「着せたい服が1着だけ写るようにトリミング（切り抜き）」</strong>した画像をお使いください。
-      </div>
-      -->
       <div id="dropZone" class="border-2 border-dashed border-indigo-300 rounded-2xl p-8 text-center hover:bg-indigo-50 transition cursor-pointer flex flex-col items-center justify-center bg-gray-50 group">
         <div class="bg-white p-3 rounded-full shadow-sm mb-4 group-hover:scale-110 transition">
           <svg class="w-8 h-8 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
@@ -156,19 +150,13 @@
         <span class="text-2xl">&#x1F389;</span> 完成しました！
       </h2>
       
-      <!-- ユーザーの安心感向上のためのプライバシーメッセージ
-      <p class="text-xs text-gray-500 mb-4 bg-gray-50 p-2 rounded-lg border border-gray-100">
-        &#x1F512; この画像はAIサーバーから安全に削除されました。<br>保存する場合は下のボタンを押してください。
-      </p>
-　　　-->
-      
       <div class="bg-white p-2 rounded-3xl shadow-lg border-2 border-indigo-50 inline-block">
         <img id="resultImage" class="w-full max-w-md rounded-2xl" alt="生成された画像">
       </div>
       
-      <button id="downloadBtn" class="mt-6 w-full sm:w-auto bg-green-500 text-white font-bold py-3 px-8 rounded-xl hover:bg-green-600 transition shadow-md flex items-center justify-center gap-2 mx-auto">
+      <button id="downloadBtn" class="mt-6 w-full sm:w-auto bg-green-500 text-white font-bold py-3 px-8 rounded-xl hover:bg-green-600 transition shadow-md flex items-center justify-center gap-2 mx-auto disabled:opacity-50 disabled:cursor-not-allowed">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-        画像を保存する
+        <span>画像を保存する</span>
       </button>
     </div>
   </div>
@@ -234,14 +222,41 @@
       if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
     });
 
-    downloadBtn.addEventListener('click', () => {
+    // 【改善】画像を別タブで開かず、直接ダウンロードさせる処理に変更
+    downloadBtn.addEventListener('click', async () => {
       if (!resultImage.src) return;
-      const a = document.createElement('a');
-      a.href = resultImage.src;
-      a.download = `baby_kisekae_${new Date().getTime()}.jpg`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
+      
+      const originalText = downloadBtn.innerHTML;
+      // ボタンを「準備中」の表示に変更
+      downloadBtn.innerHTML = '<svg class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><span>保存の準備中...</span>';
+      downloadBtn.disabled = true;
+
+      try {
+        // 画像URLからデータを取得し、ブラウザ上で扱えるBlob(ファイル形式)に変換
+        const response = await fetch(resultImage.src);
+        if (!response.ok) throw new Error("Network response was not ok");
+        const blob = await response.blob();
+        
+        // Blobからローカル用の一時URLを作成
+        const url = window.URL.createObjectURL(blob);
+        
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `baby_kisekae_${new Date().getTime()}.jpg`; // 保存時のファイル名
+        document.body.appendChild(a);
+        a.click();
+        
+        // 処理が終わったら一時URLを削除してメモリを解放
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      } catch (error) {
+        console.error("ダウンロードエラー:", error);
+        alert("画像の保存に失敗しました。\nお手数ですが、画像を長押し（または右クリック）して保存してください。");
+      } finally {
+        // ボタンの見た目を元に戻す
+        downloadBtn.innerHTML = originalText;
+        downloadBtn.disabled = false;
+      }
     });
 
     const checkStatus = async (jobId) => {
@@ -257,6 +272,13 @@
 
         if (data.status === 'completed') {
           resultImage.src = data.output[0];
+          
+          fetch('/api/generate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'delete', jobId: jobId })
+          }).catch(e => console.error("削除リクエストエラー", e));
+
           updateProgress(100, "完成しました！", "表示の準備をしています...");
           setTimeout(() => {
             loading.classList.add('hidden');
@@ -264,12 +286,13 @@
             generateBtn.disabled = false;
             resultContainer.scrollIntoView({ behavior: 'smooth' });
           }, 1000);
+          
         } else if (data.status === 'failed') {
           throw new Error(data.error?.message || 'AI側で合成に失敗しました。別の画像でお試しください。');
         } else {
           updateProgress(
             Math.min(parseInt(progressBar.style.width) + 15, 90),
-            "AIがアイテムを合成しています...",
+            "がんばって合成しています...",
             "高精度な処理のため、もう少しかかります"
           );
           setTimeout(() => checkStatus(jobId), 4000);
@@ -303,7 +326,6 @@
           let w = img.width;
           let h = img.height;
 
-          // Vercelの制限を確実にクリアするためのバランス調整（1024px）
           const MAX_SIZE = 1024;
           if (w > MAX_SIZE || h > MAX_SIZE) {
             const ratio = Math.min(MAX_SIZE / w, MAX_SIZE / h);
@@ -316,7 +338,6 @@
             canvas.height = h;
             const ctx = canvas.getContext('2d');
             ctx.drawImage(img, 0, 0, w, h);
-            // 画質とサイズのバランスが良い 0.85 に設定
             resolve(canvas.toDataURL('image/jpeg', 0.85));
           } else {
             const paddingRatio = 2.0; 
@@ -324,7 +345,6 @@
             canvas.height = h * paddingRatio;
             const ctx = canvas.getContext('2d');
             
-            // データが重くなる透過PNGをやめ、白背景のJPEGにする
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
@@ -356,7 +376,6 @@
       updateProgress(10, "画像を最適化中...", "アイテムの種類に合わせて調整しています");
 
       try {
-        // ここで画像のリサイズと余白調整を実行
         const processedImageBase64 = await processImage(currentDataUri, itemType === 'bib');
 
         updateProgress(20, "AIにリクエストを送信中...", "ベビーちゃんのモデル画像を生成しています");
@@ -375,7 +394,6 @@
           })
         });
         
-        // 追加: JSON変換前に通信自体のエラーを検知する
         if (!res.ok) {
           const errText = await res.text();
           if (res.status === 413 || errText.includes('Request Entity Too Large')) {
