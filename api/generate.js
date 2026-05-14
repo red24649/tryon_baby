@@ -27,12 +27,10 @@ export default async function handler(req, res) {
       let lightingDescription = "soft and natural lighting";
 
       if (itemType === 'bib') {
-        // スタイの場合は胸元を平らにしてツルツルにする（今まで通り）
         outfitDescription = "a simple, perfectly plain white short-sleeve bodysuit";
         chestDescription = "a perfectly smooth, flat white fabric over the chest without any wrinkles";
         postureDescription = "sitting happily on the floor, perfectly facing forward, upright posture";
       } else {
-        // 洋服の場合は「自然なシワ」と「立体感」を強く指示する
         chestDescription = "natural fabric texture with soft, realistic folds, creases, and gentle wrinkles that give the clothing a realistic 3D volume";
         lightingDescription = "soft directional lighting highlighting the natural 3D shape and wrinkles of the fabric";
 
@@ -59,7 +57,8 @@ export default async function handler(req, res) {
       console.log("Generating baby image...");
       const imagenUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${geminiApiKey}`;
       
-      const babyPrompt = `A professional studio photograph of a cute ${race} ${gender} baby, about 6-12 months old, ${postureDescription}. The baby is sitting comfortably on a soft, plush, textured cream-colored rug or blanket. Full body shot. The baby MUST be wearing ${outfitDescription} with ${chestDescription}. The baby has ${armsDescription} and ${legsDescription}. Bareheaded, strictly NO hats or hair accessories. The lighting is ${lightingDescription}. The background is a simple, neutral color. High resolution, highly detailed, realistic.`;
+      // 改善: 顔が切れないように、ズームアウトと頭上の余白（negative space）を強く指示
+      const babyPrompt = `A professional studio photograph of a cute ${race} ${gender} baby, about 6-12 months old, ${postureDescription}. The baby is sitting comfortably on a soft, plush, textured cream-colored rug or blanket. Wide angle shot, zoomed out. The ENTIRE head, face, and body MUST be completely visible inside the frame with plenty of negative space above the head. The baby MUST be wearing ${outfitDescription} with ${chestDescription}. The baby has ${armsDescription} and ${legsDescription}. Bareheaded, strictly NO hats or hair accessories. The lighting is ${lightingDescription}. The background is a simple, neutral color with wide margins. High resolution, highly detailed, realistic.`;
 
       const imagenResponse = await fetch(imagenUrl, {
         method: 'POST',
