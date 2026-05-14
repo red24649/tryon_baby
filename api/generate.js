@@ -21,9 +21,13 @@ export default async function handler(req, res) {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          model_image: modelImage,
-          garment_image: garmentImageBase64,
-          category: category
+          // エラーの内容に合わせて、model_name と inputs で全体を包む形に修正
+          model_name: "fashn",
+          inputs: {
+            model_image: modelImage,
+            garment_image: garmentImageBase64,
+            category: category
+          }
         })
       });
 
