@@ -57,7 +57,6 @@ export default async function handler(req, res) {
       console.log("Generating baby image...");
       const imagenUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${geminiApiKey}`;
       
-      // 改善: 顔が切れないように、ズームアウトと頭上の余白（negative space）を強く指示
       const babyPrompt = `A professional studio photograph of a cute ${race} ${gender} baby, about 6-12 months old, ${postureDescription}. The baby is sitting comfortably on a soft, plush, textured cream-colored rug or blanket. Wide angle shot, zoomed out. The ENTIRE head, face, and body MUST be completely visible inside the frame with plenty of negative space above the head. The baby MUST be wearing ${outfitDescription} with ${chestDescription}. The baby has ${armsDescription} and ${legsDescription}. Bareheaded, strictly NO hats or hair accessories. The lighting is ${lightingDescription}. The background is a simple, neutral color with wide margins. High resolution, highly detailed, realistic.`;
 
       const imagenResponse = await fetch(imagenUrl, {
@@ -71,7 +70,7 @@ export default async function handler(req, res) {
 
       if (!imagenResponse.ok) {
         const errorText = await imagenResponse.text();
-        throw new Error(`Google AIエラー (赤ちゃん生成失敗): ${errorText}`);
+        throw new Error(`Google AIエラー (モデル生成失敗): ${errorText}`);
       }
 
       const imagenData = await imagenResponse.json();
@@ -98,7 +97,7 @@ export default async function handler(req, res) {
       
       if (!fashnResponse.ok) {
         const errorDetail = fashnData.error?.message || fashnData.message || JSON.stringify(fashnData);
-        throw new Error(`Fashn APIエラー (合成開始失敗): ${errorDetail}`);
+        throw new Error(`Fashn APIエラー (着画生成開始失敗): ${errorDetail}`);
       }
       
       return res.status(200).json({ jobId: fashnData.id });
@@ -118,6 +117,27 @@ export default async function handler(req, res) {
       }
       return res.status(200).json(data);
     }
+    
+    // 追加: Fashn.ai のサーバーからジョブ（画像データ）を完全に削除する機能
+    else if (action === 'delete') {
+      const { jobId } = req.body;
+      console.log(`Deleting job from Fashn.ai: ${jobId}`);
+      
+      const response = await fetch(`https://api.fashn.ai/v1/job/${jobId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${fashnApiKey}` }
+      });
+
+      if (!response.ok) {
+        // 削除に失敗しても、ユーザー側の処理は止めないためエラーは投げずにログに残すだけにする
+        const errorDetail = await response.text();
+        console.error(`Fashn API 削除エラー: ${errorDetail}`);
+        return res.status(500).json({ error: '削除に失敗しました' });
+      }
+
+      return res.status(200).json({ message: 'Deleted successfully' });
+    }
+
     else {
       return res.status(400).json({ error: 'Invalid action' });
     }
