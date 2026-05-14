@@ -80,7 +80,6 @@ export default async function handler(req, res) {
       console.log("Generating baby image...");
       const imagenUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${geminiApiKey}`;
       
-      // 改善：白い枠（額縁）ができないように、without any borders, frames, or margins と明確に指示
       const babyPrompt = `A professional studio photograph of a cute ${raceDescription} ${gender} baby, about 6-12 months old, ${postureDescription}. The baby is on a soft, plush, textured cream-colored rug or blanket. Wide angle shot, zoomed out. The ENTIRE head, face, and body MUST be completely visible perfectly inside the frame. The baby MUST be wearing ${outfitDescription} with ${chestDescription}. The baby has ${armsDescription} and ${legsDescription}. Bareheaded, strictly NO hats or hair accessories. The lighting is ${lightingDescription}. The background is a seamless, simple, neutral color filling the entire frame naturally without any borders, frames, or margins. High resolution, highly detailed, realistic.`;
 
       const imagenResponse = await fetch(imagenUrl, {
@@ -109,7 +108,12 @@ export default async function handler(req, res) {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          model_name: "tryon-max",
+          // クレジット消費を抑えるため標準モデルに変更（1回1クレジット）
+          model_name: "tryon",
+          
+          // 最高精度モデル（1回2クレジット）に戻す場合はこちらを有効化してください
+          // model_name: "tryon-max",
+          
           inputs: {
             model_image: generatedBabyImage,
             product_image: garmentImageBase64
