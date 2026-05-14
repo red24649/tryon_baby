@@ -17,19 +17,20 @@ export default async function handler(req, res) {
 
   try {
     if (action === 'start') {
-      // itemType（服かスタイか）を追加で受け取る
       const { garmentImageBase64, gender, race, sleeveLength, pantsLength, itemType } = req.body;
 
       let outfitDescription = "a simple, plain white tight-fitting short-sleeve bodysuit";
       let armsDescription = "bare forearms clearly visible";
       let legsDescription = "bare legs clearly visible";
       let chestDescription = "smooth, plain fabric over the chest without any wrinkles, collars, or buttons";
+      let postureDescription = "sitting happily on the floor, facing forward";
 
       if (itemType === 'bib') {
-        // スタイの場合は、ベースの服は「白の無地Tシャツ」に固定し、胸元をすっきりさせる
-        outfitDescription = "a simple, perfectly plain white short-sleeve t-shirt";
+        // スタイが体にフィットしやすくなるよう、首周りをすっきりさせ、少し見上げるような姿勢に調整
+        outfitDescription = "a simple, perfectly plain white short-sleeve t-shirt with a slightly lower, rounded neckline";
+        chestDescription = "a clear, unobstructed upper chest and neck area, perfect for wearing a bib";
+        postureDescription = "sitting happily, slightly looking up to show the neck clearly";
       } else {
-        // 洋服の場合はユーザーの指定（袖・ズボン）に従う
         if (sleeveLength === 'sleeveless') {
           outfitDescription = "a simple, plain white tight-fitting sleeveless bodysuit";
           armsDescription = "completely bare arms and shoulders clearly visible";
@@ -53,7 +54,7 @@ export default async function handler(req, res) {
       console.log("Generating baby image...");
       const imagenUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${geminiApiKey}`;
       
-      const babyPrompt = `A professional studio photograph of a cute ${race} ${gender} baby, about 6-12 months old, sitting happily on the floor. Full body shot, facing forward. The baby MUST be wearing ${outfitDescription} with ${chestDescription}. The baby has ${armsDescription} and ${legsDescription}. Bareheaded, strictly NO hats or hair accessories. The lighting is soft and natural. The background is a simple, neutral color. High resolution, highly detailed, realistic.`;
+      const babyPrompt = `A professional studio photograph of a cute ${race} ${gender} baby, about 6-12 months old, ${postureDescription}. Full body shot. The baby MUST be wearing ${outfitDescription} with ${chestDescription}. The baby has ${armsDescription} and ${legsDescription}. Bareheaded, strictly NO hats or hair accessories. The lighting is soft and natural. The background is a simple, neutral color. High resolution, highly detailed, realistic.`;
 
       const imagenResponse = await fetch(imagenUrl, {
         method: 'POST',
