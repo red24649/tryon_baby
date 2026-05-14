@@ -12,7 +12,8 @@ export default async function handler(req, res) {
 
   try {
     if (action === 'start') {
-      const { modelImage, garmentImageBase64, category } = req.body;
+      // category は受け取りますが、Fashn側には送らないようにします
+      const { modelImage, garmentImageBase64 } = req.body;
       
       const response = await fetch('https://api.fashn.ai/v1/run', {
         method: 'POST',
@@ -21,12 +22,11 @@ export default async function handler(req, res) {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          // エラーの内容に合わせて、model_name を最新の "tryon-max" に修正
           model_name: "tryon-max",
           inputs: {
             model_image: modelImage,
-            garment_image: garmentImageBase64,
-            category: category
+            // tryon-max の仕様に合わせて garment_image を product_image に変更し、category を削除
+            product_image: garmentImageBase64
           }
         })
       });
