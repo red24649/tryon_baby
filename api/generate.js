@@ -1,6 +1,15 @@
 // Vercelのタイムアウト時間を最大60秒に延長
 export const maxDuration = 60;
 
+// 【追加】Vercelの受信データサイズ制限を1MBから10MBに引き上げる
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '10mb',
+    },
+  },
+};
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method Not Allowed' });
@@ -118,7 +127,6 @@ export default async function handler(req, res) {
       return res.status(200).json(data);
     }
     
-    // 追加: Fashn.ai のサーバーからジョブ（画像データ）を完全に削除する機能
     else if (action === 'delete') {
       const { jobId } = req.body;
       console.log(`Deleting job from Fashn.ai: ${jobId}`);
@@ -129,7 +137,6 @@ export default async function handler(req, res) {
       });
 
       if (!response.ok) {
-        // 削除に失敗しても、ユーザー側の処理は止めないためエラーは投げずにログに残すだけにする
         const errorDetail = await response.text();
         console.error(`Fashn API 削除エラー: ${errorDetail}`);
         return res.status(500).json({ error: '削除に失敗しました' });
