@@ -12,7 +12,6 @@ export default async function handler(req, res) {
 
   try {
     if (action === 'start') {
-      // category は受け取りますが、Fashn側には送らないようにします
       const { modelImage, garmentImageBase64 } = req.body;
       
       const response = await fetch('https://api.fashn.ai/v1/run', {
@@ -25,16 +24,13 @@ export default async function handler(req, res) {
           model_name: "tryon-max",
           inputs: {
             model_image: modelImage,
-            // tryon-max の仕様に合わせて garment_image を product_image に変更し、category を削除
             product_image: garmentImageBase64
           }
         })
       });
 
-      // APIからのレスポンスをすべて取得
       const data = await response.json();
       
-      // エラーだった場合、Fashn.aiからの詳細なメッセージをそのままエラーとして投げる
       if (!response.ok) {
         const errorDetail = data.error?.message || data.message || JSON.stringify(data);
         throw new Error(`Fashn APIエラー (${response.status}): ${errorDetail}`);
