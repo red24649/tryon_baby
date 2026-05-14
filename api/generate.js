@@ -109,10 +109,10 @@ export default async function handler(req, res) {
         },
         body: JSON.stringify({
           // クレジット消費を抑えるため最新の標準モデルに変更（1回1クレジット）
-          model_name: "tryon-v1.6",
+          // model_name: "tryon-v1.6",
           
           // 最高精度モデル（1回2クレジット）に戻す場合はこちらを有効化してください
-          // model_name: "tryon-max",
+          model_name: "tryon-max",
           
           inputs: {
             model_image: generatedBabyImage,
