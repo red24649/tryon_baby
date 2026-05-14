@@ -287,7 +287,7 @@
       if (subStatus) loadingSubStatus.textContent = subStatus;
     }
 
-    // 改善: スタイのサイズをさらに小さくし、配置を上（首元）に寄せる
+    // 改善: 極端な縮小と上寄せをやめ、AIが形を認識しやすい範囲にバランスを調整
     const addPaddingToImage = (dataUri, isBib) => {
       return new Promise((resolve) => {
         if (!isBib) {
@@ -297,15 +297,15 @@
         const img = new Image();
         img.onload = () => {
           const canvas = document.createElement('canvas');
-          // 倍率を2.5に上げて、画像内のスタイの相対サイズをさらに小さくする
-          const paddingRatio = 2.5; 
+          // 2.5倍は小さすぎ（画質不足）たため、2.0倍に戻す
+          const paddingRatio = 2.0; 
           canvas.width = img.width * paddingRatio;
           canvas.height = img.height * paddingRatio;
           const ctx = canvas.getContext('2d');
           
           const x = (canvas.width - img.width) / 2;
-          // 中央ではなく、上から15%の位置に配置して首元への合成を誘導
-          const y = canvas.height * 0.15; 
+          // 上から15%は極端だったため、25%付近に戻して自然な位置に誘導
+          const y = canvas.height * 0.25; 
           ctx.drawImage(img, x, y);
           
           resolve(canvas.toDataURL('image/png'));
