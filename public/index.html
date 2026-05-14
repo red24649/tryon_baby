@@ -13,7 +13,6 @@
     .radio-group input[type="radio"]:checked + label {
       @apply border-indigo-500 bg-indigo-50 text-indigo-700 font-bold;
     }
-    /* スタイ選択時は丈感指定を無効化して見えなくする用のクラス */
     .disabled-section {
       @apply opacity-40 pointer-events-none transition;
     }
@@ -28,7 +27,14 @@
 
     <!-- 1. 服の画像アップロード -->
     <div class="mb-8">
-      <label class="block text-sm font-bold text-gray-800 mb-3">&#x2460; 着せたいアイテムの画像をアップロード</label>
+      <label class="block text-sm font-bold text-gray-800 mb-2">&#x2460; 着せたいアイテムの画像をアップロード</label>
+      
+      <!-- 色味向上のための注意書きを追加 -->
+      <div class="bg-yellow-50 border-l-4 border-yellow-400 p-3 mb-3 text-xs text-yellow-800 rounded-r-lg">
+        <strong>💡 色を正確に再現するコツ:</strong><br>
+        複数の服が写っているとAIの処理で色が混ざってしまいます。スマホの写真アプリ等で<strong>「着せたい服が1着だけ写るようにトリミング（切り抜き）」</strong>した画像をお使いください。
+      </div>
+
       <div id="dropZone" class="border-2 border-dashed border-indigo-300 rounded-2xl p-8 text-center hover:bg-indigo-50 transition cursor-pointer flex flex-col items-center justify-center bg-gray-50 group">
         <div class="bg-white p-3 rounded-full shadow-sm mb-4 group-hover:scale-110 transition">
           <svg class="w-8 h-8 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
@@ -42,7 +48,7 @@
       </div>
     </div>
 
-    <!-- 新規: アイテムの種類 -->
+    <!-- アイテムの種類 -->
     <div class="mb-6">
       <label class="block text-sm font-bold text-gray-800 mb-3">&#x2461; アイテムの種類</label>
       <div class="flex gap-3 radio-group">
@@ -183,7 +189,6 @@
 
     let currentDataUri = null;
 
-    // スタイが選択されたら丈感指定を無効化する
     const radioButtons = document.querySelectorAll('input[name="itemType"]');
     radioButtons.forEach(radio => {
       radio.addEventListener('change', (e) => {
@@ -283,7 +288,7 @@
       if (subStatus) loadingSubStatus.textContent = subStatus;
     }
 
-    // スタイの場合、画像の周りに余白（パディング）を追加して、AIに「小さいアイテム」だと錯覚させる処理
+    // 改善: 白塗りつぶしをやめ、透明(PNG)のまま余白だけを追加する
     const addPaddingToImage = (dataUri, isBib) => {
       return new Promise((resolve) => {
         if (!isBib) {
@@ -293,21 +298,19 @@
         const img = new Image();
         img.onload = () => {
           const canvas = document.createElement('canvas');
-          // 倍率を大きくするほど、スタイは相対的に小さく合成されます（2.0倍で設定）
           const paddingRatio = 2.0; 
           canvas.width = img.width * paddingRatio;
           canvas.height = img.height * paddingRatio;
           const ctx = canvas.getContext('2d');
           
-          // Fashn.aiが好む白背景で塗りつぶす
-          ctx.fillStyle = '#ffffff';
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          // 背景は透明のままにする（塗りつぶし処理を削除）
           
-          // 中央より少し上に配置（首元への合成を促すため）
           const x = (canvas.width - img.width) / 2;
           const y = (canvas.height - img.height) / 3; 
           ctx.drawImage(img, x, y);
-          resolve(canvas.toDataURL('image/jpeg'));
+          
+          // 色飛びを防ぐため、透過情報を持ったPNG形式で出力
+          resolve(canvas.toDataURL('image/png'));
         };
         img.src = dataUri;
       });
@@ -330,7 +333,6 @@
       updateProgress(10, "画像を最適化中...", "アイテムの種類に合わせて調整しています");
 
       try {
-        // スタイの場合は画像を縮小（余白追加）する処理を挟む
         const processedImageBase64 = await addPaddingToImage(currentDataUri, itemType === 'bib');
 
         updateProgress(20, "AIにリクエストを送信中...", "まずは赤ちゃんのモデル画像を生成します");
