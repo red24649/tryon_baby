@@ -19,26 +19,32 @@ export default async function handler(req, res) {
     if (action === 'start') {
       const { garmentImageBase64, gender, race, sleeveLength, pantsLength, itemType } = req.body;
 
-      let outfitDescription = "a simple, plain white tight-fitting short-sleeve bodysuit";
+      let outfitDescription = "";
       let armsDescription = "bare forearms clearly visible";
       let legsDescription = "bare legs clearly visible";
-      let chestDescription = "smooth, plain fabric over the chest without any wrinkles, collars, or buttons";
+      let chestDescription = "";
       let postureDescription = "sitting happily on the floor, facing forward";
+      let lightingDescription = "soft and natural lighting";
 
       if (itemType === 'bib') {
+        // スタイの場合は胸元を平らにしてツルツルにする（今まで通り）
         outfitDescription = "a simple, perfectly plain white short-sleeve bodysuit";
-        chestDescription = "a perfectly smooth, flat white fabric over the chest";
+        chestDescription = "a perfectly smooth, flat white fabric over the chest without any wrinkles";
         postureDescription = "sitting happily on the floor, perfectly facing forward, upright posture";
       } else {
+        // 洋服の場合は「自然なシワ」と「立体感」を強く指示する
+        chestDescription = "natural fabric texture with soft, realistic folds, creases, and gentle wrinkles that give the clothing a realistic 3D volume";
+        lightingDescription = "soft directional lighting highlighting the natural 3D shape and wrinkles of the fabric";
+
         if (sleeveLength === 'sleeveless') {
-          outfitDescription = "a simple, plain white tight-fitting sleeveless bodysuit";
+          outfitDescription = "a plain white sleeveless bodysuit, slightly loose to show natural folds";
           armsDescription = "completely bare arms and shoulders clearly visible";
         } else if (sleeveLength === 'short sleeves') {
-          outfitDescription = "a simple, plain white tight-fitting short-sleeve bodysuit";
+          outfitDescription = "a plain white short-sleeve bodysuit, slightly loose to show natural folds";
           armsDescription = "bare forearms clearly visible";
         } else if (sleeveLength === 'long sleeves') {
-          outfitDescription = "a simple, plain white tight-fitting long-sleeve bodysuit";
-          armsDescription = "arms completely covered by sleeves";
+          outfitDescription = "a plain white long-sleeve bodysuit, slightly loose to show natural folds";
+          armsDescription = "arms completely covered by sleeves with natural fabric folds";
         }
 
         if (pantsLength === 'no pants') {
@@ -46,15 +52,14 @@ export default async function handler(req, res) {
         } else if (pantsLength === 'short pants') {
           legsDescription = "bare lower legs";
         } else if (pantsLength === 'long pants') {
-          legsDescription = "legs completely covered by pants";
+          legsDescription = "legs completely covered by pants showing natural fabric folds";
         }
       }
 
       console.log("Generating baby image...");
       const imagenUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${geminiApiKey}`;
       
-      // 床を「毛足のある柔らかな布」に変更するプロンプトを追加
-      const babyPrompt = `A professional studio photograph of a cute ${race} ${gender} baby, about 6-12 months old, ${postureDescription}. The baby is sitting comfortably on a soft, plush, textured cream-colored rug or blanket. Full body shot. The baby MUST be wearing ${outfitDescription} with ${chestDescription}. The baby has ${armsDescription} and ${legsDescription}. Bareheaded, strictly NO hats or hair accessories. The lighting is soft and natural. The background is a simple, neutral color. High resolution, highly detailed, realistic.`;
+      const babyPrompt = `A professional studio photograph of a cute ${race} ${gender} baby, about 6-12 months old, ${postureDescription}. The baby is sitting comfortably on a soft, plush, textured cream-colored rug or blanket. Full body shot. The baby MUST be wearing ${outfitDescription} with ${chestDescription}. The baby has ${armsDescription} and ${legsDescription}. Bareheaded, strictly NO hats or hair accessories. The lighting is ${lightingDescription}. The background is a simple, neutral color. High resolution, highly detailed, realistic.`;
 
       const imagenResponse = await fetch(imagenUrl, {
         method: 'POST',
