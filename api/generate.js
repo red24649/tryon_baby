@@ -116,7 +116,8 @@ export default async function handler(req, res) {
           
           inputs: {
             model_image: generatedBabyImage,
-            product_image: garmentImageBase64
+            // 修正：新しい仕様に合わせて product_image から garment_image に変更
+            garment_image: garmentImageBase64
           }
         })
       });
