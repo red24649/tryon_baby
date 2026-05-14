@@ -1,7 +1,6 @@
 // Vercelのタイムアウト時間を最大60秒に延長
 export const maxDuration = 60;
 
-// Vercelの受信データサイズ制限を引き上げる（※無料プランの実際の最大上限は4.5MBです）
 export const config = {
   api: {
     bodyParser: {
@@ -26,18 +25,26 @@ export default async function handler(req, res) {
 
   try {
     if (action === 'start') {
-      const { garmentImageBase64, gender, race, sleeveLength, pantsLength, itemType } = req.body;
+      const { garmentImageBase64, gender, race, sleeveLength, pantsLength, itemType, pose } = req.body;
 
       let outfitDescription = "";
       let armsDescription = "bare forearms clearly visible";
       let legsDescription = "bare legs clearly visible";
       let chestDescription = "";
-      let postureDescription = "sitting happily on the floor, facing forward";
+      let postureDescription = "sitting happily on the floor, perfectly facing forward, upright posture";
       let lightingDescription = "soft and natural lighting";
+
+      // 追加：ポーズに応じた姿勢の指示
+      if (pose === 'sitting_side') {
+        postureDescription = "sitting happily on the floor, body angled slightly to the side, turning head to look at the camera";
+      } else if (pose === 'standing') {
+        postureDescription = "standing up, holding onto a small soft white baby sofa or padded prop for support, looking at the camera";
+      }
 
       if (itemType === 'bib') {
         outfitDescription = "a simple, perfectly plain white short-sleeve bodysuit";
         chestDescription = "a perfectly smooth, flat white fabric over the chest without any wrinkles";
+        // スタイの場合は合成精度を保つため、強制的に正面を向かせる
         postureDescription = "sitting happily on the floor, perfectly facing forward, upright posture";
       } else {
         chestDescription = "natural fabric texture with soft, realistic folds, creases, and gentle wrinkles that give the clothing a realistic 3D volume";
@@ -66,7 +73,7 @@ export default async function handler(req, res) {
       console.log("Generating baby image...");
       const imagenUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${geminiApiKey}`;
       
-      const babyPrompt = `A professional studio photograph of a cute ${race} ${gender} baby, about 6-12 months old, ${postureDescription}. The baby is sitting comfortably on a soft, plush, textured cream-colored rug or blanket. Wide angle shot, zoomed out. The ENTIRE head, face, and body MUST be completely visible inside the frame with plenty of negative space above the head. The baby MUST be wearing ${outfitDescription} with ${chestDescription}. The baby has ${armsDescription} and ${legsDescription}. Bareheaded, strictly NO hats or hair accessories. The lighting is ${lightingDescription}. The background is a simple, neutral color with wide margins. High resolution, highly detailed, realistic.`;
+      const babyPrompt = `A professional studio photograph of a cute ${race} ${gender} baby, about 6-12 months old, ${postureDescription}. The baby is on a soft, plush, textured cream-colored rug or blanket. Wide angle shot, zoomed out. The ENTIRE head, face, and body MUST be completely visible inside the frame with plenty of negative space above the head. The baby MUST be wearing ${outfitDescription} with ${chestDescription}. The baby has ${armsDescription} and ${legsDescription}. Bareheaded, strictly NO hats or hair accessories. The lighting is ${lightingDescription}. The background is a simple, neutral color with wide margins. High resolution, highly detailed, realistic.`;
 
       const imagenResponse = await fetch(imagenUrl, {
         method: 'POST',
@@ -102,7 +109,6 @@ export default async function handler(req, res) {
         })
       });
 
-      // エラー時にパースで落ちないように、JSON変換の前にチェックを行う
       if (!fashnResponse.ok) {
         const errorDetail = await fashnResponse.text();
         throw new Error(`Fashn APIエラー (着画生成開始失敗): ${errorDetail}`);
