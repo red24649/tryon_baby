@@ -43,10 +43,11 @@ export default async function handler(req, res) {
       let postureDescription = "sitting happily on the floor, perfectly facing forward, upright posture";
       let lightingDescription = "soft and natural lighting";
 
+      // 改善：つかまり立ちのカメラアングルを水平（アイレベル）に指定
       if (pose === 'sitting_side') {
         postureDescription = "sitting happily on the floor, in a relaxed and natural posture, with the body angled slightly diagonally to the camera (3/4 profile view)";
       } else if (pose === 'standing') {
-        postureDescription = "standing up, holding onto a small soft white baby sofa or padded prop for support, looking at the camera";
+        postureDescription = "standing up, holding onto a small soft white baby sofa or padded prop for support, looking at the camera. Shot at the baby's eye level, horizontal camera angle, perfectly straight-on view, strictly NOT looking down from above";
       }
 
       if (itemType === 'bib') {
