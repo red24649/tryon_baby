@@ -21,8 +21,8 @@ export default async function handler(req, res) {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          // エラーの内容に合わせて、model_name と inputs で全体を包む形に修正
-          model_name: "fashn",
+          // エラーの内容に合わせて、model_name を最新の "tryon-max" に修正
+          model_name: "tryon-max",
           inputs: {
             model_image: modelImage,
             garment_image: garmentImageBase64,
