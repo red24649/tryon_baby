@@ -26,7 +26,6 @@ export default async function handler(req, res) {
       let postureDescription = "sitting happily on the floor, facing forward";
 
       if (itemType === 'bib') {
-        // 自然な姿勢に戻しつつ、服のシワがスタイの邪魔をしないように平らな胸元を指示
         outfitDescription = "a simple, perfectly plain white short-sleeve bodysuit";
         chestDescription = "a perfectly smooth, flat white fabric over the chest";
         postureDescription = "sitting happily on the floor, perfectly facing forward, upright posture";
@@ -54,7 +53,8 @@ export default async function handler(req, res) {
       console.log("Generating baby image...");
       const imagenUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${geminiApiKey}`;
       
-      const babyPrompt = `A professional studio photograph of a cute ${race} ${gender} baby, about 6-12 months old, ${postureDescription}. Full body shot. The baby MUST be wearing ${outfitDescription} with ${chestDescription}. The baby has ${armsDescription} and ${legsDescription}. Bareheaded, strictly NO hats or hair accessories. The lighting is soft and natural. The background is a simple, neutral color. High resolution, highly detailed, realistic.`;
+      // 床を「毛足のある柔らかな布」に変更するプロンプトを追加
+      const babyPrompt = `A professional studio photograph of a cute ${race} ${gender} baby, about 6-12 months old, ${postureDescription}. The baby is sitting comfortably on a soft, plush, textured cream-colored rug or blanket. Full body shot. The baby MUST be wearing ${outfitDescription} with ${chestDescription}. The baby has ${armsDescription} and ${legsDescription}. Bareheaded, strictly NO hats or hair accessories. The lighting is soft and natural. The background is a simple, neutral color. High resolution, highly detailed, realistic.`;
 
       const imagenResponse = await fetch(imagenUrl, {
         method: 'POST',
