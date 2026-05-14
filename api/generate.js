@@ -19,23 +19,35 @@ export default async function handler(req, res) {
     if (action === 'start') {
       const { garmentImageBase64, gender, race, sleeveLength, pantsLength } = req.body;
 
-      // ユーザーの選択に合わせて、赤ちゃんの着るベース服と露出度を決定
+      // ユーザーの選択に合わせて、赤ちゃんの着るベース服と露出度を「腕」と「足」別々に決定
       let outfitDescription = "a simple, plain white tight-fitting short-sleeve bodysuit";
-      let legsDescription = "bare legs and bare arms clearly visible";
+      let armsDescription = "bare forearms clearly visible";
+      let legsDescription = "bare legs clearly visible";
 
-      if (sleeveLength === 'sleeveless') outfitDescription = "a simple, plain white tight-fitting sleeveless bodysuit";
-      else if (sleeveLength === 'short sleeves') outfitDescription = "a simple, plain white tight-fitting short-sleeve bodysuit";
-      else if (sleeveLength === 'long sleeves') outfitDescription = "a simple, plain white tight-fitting long-sleeve bodysuit";
+      if (sleeveLength === 'sleeveless') {
+        outfitDescription = "a simple, plain white tight-fitting sleeveless bodysuit";
+        armsDescription = "completely bare arms and shoulders clearly visible";
+      } else if (sleeveLength === 'short sleeves') {
+        outfitDescription = "a simple, plain white tight-fitting short-sleeve bodysuit";
+        armsDescription = "bare forearms clearly visible";
+      } else if (sleeveLength === 'long sleeves') {
+        outfitDescription = "a simple, plain white tight-fitting long-sleeve bodysuit";
+        armsDescription = "arms completely covered by sleeves";
+      }
 
-      if (pantsLength === 'no pants') legsDescription = "completely bare legs";
-      else if (pantsLength === 'short pants') legsDescription = "bare lower legs";
-      else if (pantsLength === 'long pants') legsDescription = "legs covered by long pants";
+      if (pantsLength === 'no pants') {
+        legsDescription = "completely bare legs";
+      } else if (pantsLength === 'short pants') {
+        legsDescription = "bare lower legs";
+      } else if (pantsLength === 'long pants') {
+        legsDescription = "legs completely covered by pants";
+      }
 
       console.log("Generating baby image...");
       const imagenUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${geminiApiKey}`;
       
-      // 動的に変化するプロンプト
-      const babyPrompt = `A professional studio photograph of a cute ${race} ${gender} baby, about 6-12 months old, sitting happily on the floor. Full body shot, facing forward. The baby MUST be wearing ${outfitDescription}, with ${legsDescription}. Bareheaded, strictly NO hats or hair accessories. The lighting is soft and natural, creating gentle shadows. The background is a simple, neutral color. High resolution, highly detailed, realistic.`;
+      // 腕と足の露出を確実にプロンプトへ組み込む
+      const babyPrompt = `A professional studio photograph of a cute ${race} ${gender} baby, about 6-12 months old, sitting happily on the floor. Full body shot, facing forward. The baby MUST be wearing ${outfitDescription}. The baby has ${armsDescription} and ${legsDescription}. Bareheaded, strictly NO hats or hair accessories. The lighting is soft and natural, creating gentle shadows. The background is a simple, neutral color. High resolution, highly detailed, realistic.`;
 
       const imagenResponse = await fetch(imagenUrl, {
         method: 'POST',
