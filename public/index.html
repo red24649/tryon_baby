@@ -79,7 +79,7 @@
     <div id="loading" class="hidden mt-6 text-center">
       <div class="inline-block animate-spin rounded-full h-10 w-10 border-4 border-indigo-200 border-t-indigo-600 mb-2"></div>
       <p id="loadingStatus" class="text-indigo-700 font-bold text-sm">AIに画像生成をリクエスト中...</p>
-      <p class="text-xs text-gray-500 mt-1">※高精度な処理のため、30秒?1分ほどかかる場合があります。</p>
+      <p class="text-xs text-gray-500 mt-1">※高精度な処理のため、30秒〜1分ほどかかる場合があります。</p>
       
       <!-- 進捗バー -->
       <div class="w-full bg-gray-200 rounded-full h-2.5 mt-4 overflow-hidden">
@@ -160,21 +160,16 @@
         const data = await res.json();
 
         if (data.status === 'completed') {
-          // 成功！画像を表示
-          resultImage.src = data.output[0]; // Fashn.aiは配列で結果URLを返す
+          resultImage.src = data.output[0];
           loading.classList.add('hidden');
           resultContainer.classList.remove('hidden');
           generateBtn.disabled = false;
         } else if (data.status === 'failed') {
-          // 失敗
           throw new Error('AI側で画像の合成に失敗しました。別の服の画像でお試しください。');
         } else {
-          // 'starting' や 'processing' の場合は3秒後に再確認
           loadingStatus.textContent = "AIが洋服の合成計算を行っています...";
-          // プログレスバーを少しずつ伸ばす（演出）
           let currentWidth = parseInt(progressBar.style.width || '10');
           if(currentWidth < 90) progressBar.style.width = `${currentWidth + 10}%`;
-          
           setTimeout(() => checkStatus(jobId), 3000);
         }
       } catch (err) {
@@ -194,7 +189,6 @@
       if (!currentDataUri) return;
       
       const selectedModel = document.querySelector('input[name="modelImage"]:checked').value;
-      const category = garmentCategory.value;
 
       generateBtn.disabled = true;
       loading.classList.remove('hidden');
@@ -211,8 +205,7 @@
           body: JSON.stringify({
             action: 'start',
             modelImage: selectedModel,
-            garmentImageBase64: currentDataUri,
-            category: category
+            garmentImageBase64: currentDataUri
           })
         });
         
