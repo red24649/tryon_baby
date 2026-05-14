@@ -25,8 +25,8 @@ export default async function handler(req, res) {
       // 最新の imagen-4.0-generate-001 を使用
       const imagenUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${geminiApiKey}`;
       
-      // プロンプトを調整し、自然なライティングと質感を強調する指示を追加
-      const babyPrompt = `A professional studio photograph of a cute ${race} ${gender} baby, about 6-12 months old, sitting happily. The lighting is soft and natural, creating gentle shadows that emphasize the texture of clothing and skin. The background is a simple, neutral color. High resolution, detailed.`;
+      // プロンプトを厳密に調整: シンプルな白い肌着、手足が見える、帽子なし を強制する
+      const babyPrompt = `A professional studio photograph of a cute ${race} ${gender} baby, about 6-12 months old, sitting happily on the floor. Full body shot, facing forward, arms and legs clearly visible. The baby MUST be wearing a simple, plain white tight-fitting short-sleeve bodysuit. Bareheaded, strictly NO hats or hair accessories. The lighting is soft and natural, creating gentle shadows. The background is a simple, neutral color. High resolution, highly detailed, realistic.`;
 
       const imagenResponse = await fetch(imagenUrl, {
         method: 'POST',
