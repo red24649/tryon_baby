@@ -5,10 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>高精度ベビー着せ替えメーカー</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- type="text/tailwindcss" を追加して、@applyが効くように修正 -->
   <style type="text/tailwindcss">
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
-    /* カスタムラジオボタンのデザイン */
     .radio-group label {
       @apply border-2 border-gray-200 rounded-xl px-4 py-3 text-center cursor-pointer transition text-sm font-medium text-gray-700 bg-white hover:bg-gray-50;
     }
@@ -40,9 +38,34 @@
       </div>
     </div>
 
-    <!-- 2. 赤ちゃんの特徴選択 -->
+    <!-- 2. 服の詳細指定 -->
     <div class="mb-8">
-      <label class="block text-sm font-bold text-gray-800 mb-3">&#x2461; 赤ちゃんのモデルを生成</label>
+      <label class="block text-sm font-bold text-gray-800 mb-3">&#x2461; 服の丈感を指定（精度向上）</label>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs text-gray-600 mb-1">袖の長さ</label>
+          <select id="sleeveLength" class="w-full rounded-xl border-2 border-gray-200 p-3 text-sm focus:border-indigo-500 focus:outline-none transition">
+            <option value="">指定なし</option>
+            <option value="sleeveless">ノースリーブ</option>
+            <option value="short sleeves" selected>半袖</option>
+            <option value="long sleeves">長袖</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs text-gray-600 mb-1">ズボンの長さ</label>
+          <select id="pantsLength" class="w-full rounded-xl border-2 border-gray-200 p-3 text-sm focus:border-indigo-500 focus:outline-none transition">
+            <option value="">指定なし</option>
+            <option value="short pants">半ズボン・短パン</option>
+            <option value="long pants">長ズボン</option>
+            <option value="no pants" selected>ズボンなし（足開き）</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. 赤ちゃんの特徴選択 -->
+    <div class="mb-8">
+      <label class="block text-sm font-bold text-gray-800 mb-3">&#x2462; 赤ちゃんのモデルを生成</label>
       
       <div class="mb-4">
         <p class="text-xs text-gray-600 font-bold mb-2 ml-1">性別</p>
@@ -67,7 +90,7 @@
           </div>
           <div>
             <input type="radio" name="race" value="half-Caucasian, half-Japanese" id="half" class="sr-only">
-            <label for="half" class="block w-full">白人ハーフ</label>
+            <label for="half" class="block w-full">ハーフ</label>
           </div>
           <div>
             <input type="radio" name="race" value="Caucasian" id="ca" class="sr-only">
@@ -135,9 +158,12 @@
     const errorMessage = document.getElementById('errorMessage');
     const downloadBtn = document.getElementById('downloadBtn');
 
+    // 追加: セレクトボックス
+    const sleeveLength = document.getElementById('sleeveLength');
+    const pantsLength = document.getElementById('pantsLength');
+
     let currentDataUri = null;
 
-    // 画像ファイルの読み込み処理
     const handleFile = (file) => {
       if (!file || !file.type.startsWith('image/')) {
         showError("画像ファイルを選択してください。");
@@ -165,7 +191,6 @@
       if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
     });
 
-    // ダウンロード機能
     downloadBtn.addEventListener('click', () => {
       if (!resultImage.src) return;
       const a = document.createElement('a');
@@ -176,7 +201,6 @@
       document.body.removeChild(a);
     });
 
-    // ポーリング関数（数秒おきにステータスを確認）
     const checkStatus = async (jobId) => {
       try {
         const res = await fetch('/api/generate', {
@@ -189,29 +213,22 @@
         if (!res.ok) throw new Error(data.error || 'ステータス確認に失敗しました');
 
         if (data.status === 'completed') {
-          // 成功！
           resultImage.src = data.output[0];
           updateProgress(100, "完成しました！", "表示の準備をしています...");
           setTimeout(() => {
             loading.classList.add('hidden');
             resultContainer.classList.remove('hidden');
             generateBtn.disabled = false;
-            // 画面一番下へスクロール
             resultContainer.scrollIntoView({ behavior: 'smooth' });
           }, 1000);
-
         } else if (data.status === 'failed') {
-          // 失敗
           throw new Error(data.error?.message || 'AI側で合成に失敗しました。別の画像でお試しください。');
-
         } else {
-          // 処理中...
           updateProgress(
             Math.min(parseInt(progressBar.style.width) + 15, 90),
             "AIが洋服を着せています...",
             "高精度な処理のため、もう少しかかります"
           );
-          // 4秒後に再確認
           setTimeout(() => checkStatus(jobId), 4000);
         }
       } catch (err) {
@@ -235,12 +252,13 @@
       if (subStatus) loadingSubStatus.textContent = subStatus;
     }
 
-    // 生成ボタンのクリック処理
     generateBtn.addEventListener('click', async () => {
       if (!currentDataUri) return;
       
       const gender = document.querySelector('input[name="gender"]:checked').value;
       const race = document.querySelector('input[name="race"]:checked').value;
+      const sLen = sleeveLength.value;
+      const pLen = pantsLength.value;
 
       generateBtn.disabled = true;
       loading.classList.remove('hidden');
@@ -250,7 +268,6 @@
       updateProgress(10, "AIにリクエストを送信中...", "まずは赤ちゃんのモデル画像を生成します");
 
       try {
-        // ジョブの開始リクエスト
         const res = await fetch('/api/generate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -258,7 +275,9 @@
             action: 'start',
             garmentImageBase64: currentDataUri,
             gender: gender,
-            race: race
+            race: race,
+            sleeveLength: sLen, // 追加: 選択された袖の長さ
+            pantsLength: pLen   // 追加: 選択されたズボンの長さ
           })
         });
         
@@ -268,7 +287,6 @@
         const jobId = data.jobId;
         updateProgress(40, "赤ちゃんの生成が完了しました", "次に、Fashn.aiで着せ替えを開始します...");
 
-        // 完了するまでポーリング開始
         setTimeout(() => checkStatus(jobId), 4000);
 
       } catch (err) {
