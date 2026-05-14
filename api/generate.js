@@ -27,6 +27,17 @@ export default async function handler(req, res) {
     if (action === 'start') {
       const { garmentImageBase64, gender, race, sleeveLength, pantsLength, itemType, pose } = req.body;
 
+      // --- 追加・改善：人種のプロンプトをより明確に強調 ---
+      let raceDescription = race;
+      if (race === 'half-Caucasian, half-Japanese') {
+        // 日本人に寄りすぎるのを防ぐため、欧米とのミックスであることを強く指示する
+        raceDescription = "Eurasian mixed-race (half Caucasian and half Japanese) with beautifully blended facial features";
+      } else if (race === 'Japanese') {
+        raceDescription = "fully Japanese";
+      } else if (race === 'Caucasian') {
+        raceDescription = "fully Caucasian";
+      }
+
       let outfitDescription = "";
       let armsDescription = "bare forearms clearly visible";
       let legsDescription = "bare legs clearly visible";
@@ -34,7 +45,6 @@ export default async function handler(req, res) {
       let postureDescription = "sitting happily on the floor, perfectly facing forward, upright posture";
       let lightingDescription = "soft and natural lighting";
 
-      // 改善：ポーズの指示をより自然な「斜め」に修正
       if (pose === 'sitting_side') {
         postureDescription = "sitting happily on the floor, in a relaxed and natural posture, with the body angled slightly diagonally to the camera (3/4 profile view)";
       } else if (pose === 'standing') {
@@ -44,7 +54,6 @@ export default async function handler(req, res) {
       if (itemType === 'bib') {
         outfitDescription = "a simple, perfectly plain white short-sleeve bodysuit";
         chestDescription = "a perfectly smooth, flat white fabric over the chest without any wrinkles";
-        // スタイの場合は合成精度を保つため、強制的に正面を向かせる
         postureDescription = "sitting happily on the floor, perfectly facing forward, upright posture";
       } else {
         chestDescription = "natural fabric texture with soft, realistic folds, creases, and gentle wrinkles that give the clothing a realistic 3D volume";
@@ -73,7 +82,8 @@ export default async function handler(req, res) {
       console.log("Generating baby image...");
       const imagenUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${geminiApiKey}`;
       
-      const babyPrompt = `A professional studio photograph of a cute ${race} ${gender} baby, about 6-12 months old, ${postureDescription}. The baby is on a soft, plush, textured cream-colored rug or blanket. Wide angle shot, zoomed out. The ENTIRE head, face, and body MUST be completely visible inside the frame with plenty of negative space above the head. The baby MUST be wearing ${outfitDescription} with ${chestDescription}. The baby has ${armsDescription} and ${legsDescription}. Bareheaded, strictly NO hats or hair accessories. The lighting is ${lightingDescription}. The background is a simple, neutral color with wide margins. High resolution, highly detailed, realistic.`;
+      // プロンプトに raceDescription を使用
+      const babyPrompt = `A professional studio photograph of a cute ${raceDescription} ${gender} baby, about 6-12 months old, ${postureDescription}. The baby is on a soft, plush, textured cream-colored rug or blanket. Wide angle shot, zoomed out. The ENTIRE head, face, and body MUST be completely visible inside the frame with plenty of negative space above the head. The baby MUST be wearing ${outfitDescription} with ${chestDescription}. The baby has ${armsDescription} and ${legsDescription}. Bareheaded, strictly NO hats or hair accessories. The lighting is ${lightingDescription}. The background is a simple, neutral color with wide margins. High resolution, highly detailed, realistic.`;
 
       const imagenResponse = await fetch(imagenUrl, {
         method: 'POST',
