@@ -3,99 +3,114 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>高精度ベビー着せ替えメーカー (Fashn.ai版)</title>
+  <title>高精度ベビー着せ替えメーカー</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
-    /* カスタムラジオボタンのスタイル */
-    input[type="radio"]:checked + div { border-color: #4f46e5; background-color: #eef2ff; }
-    input[type="radio"]:checked + div .check-icon { display: block; }
+    /* カスタムラジオボタンのデザイン */
+    .radio-group label {
+      @apply border-2 border-gray-200 rounded-xl px-4 py-3 text-center cursor-pointer transition text-sm font-medium text-gray-700 bg-white hover:bg-gray-50;
+    }
+    .radio-group input[type="radio"]:checked + label {
+      @apply border-indigo-500 bg-indigo-50 text-indigo-700 font-bold;
+    }
   </style>
 </head>
 <body class="bg-indigo-50 min-h-screen flex items-center justify-center p-4">
   <div class="bg-white p-6 sm:p-8 rounded-3xl shadow-xl w-full max-w-lg my-8">
-    <div class="text-center mb-6">
+    <div class="text-center mb-8">
       <h1 class="text-2xl font-extrabold text-indigo-900 mb-2">&#x1F458; 高精度ベビー着せ替えメーカー</h1>
-      <p class="text-sm text-gray-500">お持ちの洋服の画像をアップロードすると、ロゴや柄を維持したままモデルに着せ替えます。</p>
+      <p class="text-sm text-gray-500">服の柄やロゴを完璧に再現します。赤ちゃんのモデルもAIが自動生成します。</p>
     </div>
 
     <!-- 1. 服の画像アップロード -->
-    <div class="mb-6">
-      <label class="block text-sm font-bold text-gray-700 mb-2">1. 着せたい服の画像をアップロード</label>
-      <div id="dropZone" class="border-2 border-dashed border-indigo-300 rounded-xl p-6 text-center hover:bg-indigo-50 transition cursor-pointer flex flex-col items-center justify-center bg-gray-50">
-        <svg class="w-10 h-10 text-indigo-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
-        <p class="text-sm text-gray-600 font-medium mb-1">クリックして服の画像を選択</p>
+    <div class="mb-8">
+      <label class="block text-sm font-bold text-gray-800 mb-3">&#x2460; 着せたい服の画像をアップロード</label>
+      <div id="dropZone" class="border-2 border-dashed border-indigo-300 rounded-2xl p-8 text-center hover:bg-indigo-50 transition cursor-pointer flex flex-col items-center justify-center bg-gray-50 group">
+        <div class="bg-white p-3 rounded-full shadow-sm mb-4 group-hover:scale-110 transition">
+          <svg class="w-8 h-8 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+        </div>
+        <p class="text-sm text-gray-600 font-medium">クリックして画像を選択</p>
+        <p class="text-xs text-gray-400 mt-1">またはドラッグ＆ドロップ</p>
         <input type="file" id="imageInput" accept="image/*" class="hidden" />
       </div>
-      <div class="mt-3 flex justify-center">
-        <img id="previewGarment" class="hidden max-h-32 rounded-xl object-contain border border-gray-200" alt="服のプレビュー">
+      <div class="mt-4 flex justify-center">
+        <img id="previewGarment" class="hidden h-40 rounded-xl object-contain border-2 border-gray-100 shadow-sm" alt="服のプレビュー">
       </div>
     </div>
 
-    <!-- 2. 服のカテゴリ -->
-    <div class="mb-6">
-      <label class="block text-sm font-bold text-gray-700 mb-2">2. 服のカテゴリを選択</label>
-      <select id="garmentCategory" class="w-full rounded-xl border-2 border-gray-200 p-3 text-sm focus:border-indigo-500 focus:outline-none">
-        <option value="one-pieces">ロンパース・ワンピース (One-pieces)</option>
-        <option value="tops">トップス (Tops)</option>
-        <option value="bottoms">ボトムス (Bottoms)</option>
-      </select>
-    </div>
+    <!-- 2. 赤ちゃんの特徴選択 -->
+    <div class="mb-8">
+      <label class="block text-sm font-bold text-gray-800 mb-3">&#x2461; 赤ちゃんのモデルを生成</label>
+      
+      <div class="mb-4">
+        <p class="text-xs text-gray-600 font-bold mb-2 ml-1">性別</p>
+        <div class="flex gap-3 radio-group">
+          <div class="flex-1">
+            <input type="radio" name="gender" value="baby boy" id="boy" class="sr-only" checked>
+            <label for="boy" class="block w-full">&#x1F466; 男の子</label>
+          </div>
+          <div class="flex-1">
+            <input type="radio" name="gender" value="baby girl" id="girl" class="sr-only">
+            <label for="girl" class="block w-full">&#x1F467; 女の子</label>
+          </div>
+        </div>
+      </div>
 
-    <!-- 3. モデルの選択 -->
-    <div class="mb-6">
-      <label class="block text-sm font-bold text-gray-700 mb-2">3. 赤ちゃんのモデルを選択</label>
-      <div class="grid grid-cols-2 gap-3">
-        <!-- モデル1 -->
-        <label class="cursor-pointer relative">
-          <input type="radio" name="modelImage" value="https://images.unsplash.com/photo-1519689680058-324335c77eba?w=600&auto=format&fit=crop&q=80" class="sr-only" checked>
-          <div class="border-2 border-gray-200 rounded-xl overflow-hidden hover:bg-gray-50 transition relative">
-            <img src="https://images.unsplash.com/photo-1519689680058-324335c77eba?w=300&auto=format&fit=crop&q=80" class="w-full h-32 object-cover" alt="モデル1">
-            <div class="p-2 text-center text-xs font-bold text-gray-700 bg-white">モデル A</div>
-            <div class="check-icon hidden absolute top-2 right-2 bg-indigo-600 text-white rounded-full p-1 shadow">
-              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
-            </div>
+      <div>
+        <p class="text-xs text-gray-600 font-bold mb-2 ml-1">国籍・ルーツ</p>
+        <div class="grid grid-cols-3 gap-3 radio-group">
+          <div>
+            <input type="radio" name="race" value="Japanese" id="jp" class="sr-only" checked>
+            <label for="jp" class="block w-full">日本人</label>
           </div>
-        </label>
-        <!-- モデル2 -->
-        <label class="cursor-pointer relative">
-          <input type="radio" name="modelImage" value="https://images.unsplash.com/photo-1544098485-2a2ed6da40ba?w=600&auto=format&fit=crop&q=80" class="sr-only">
-          <div class="border-2 border-gray-200 rounded-xl overflow-hidden hover:bg-gray-50 transition relative">
-            <img src="https://images.unsplash.com/photo-1544098485-2a2ed6da40ba?w=300&auto=format&fit=crop&q=80" class="w-full h-32 object-cover" alt="モデル2">
-            <div class="p-2 text-center text-xs font-bold text-gray-700 bg-white">モデル B</div>
-            <div class="check-icon hidden absolute top-2 right-2 bg-indigo-600 text-white rounded-full p-1 shadow">
-              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
-            </div>
+          <div>
+            <input type="radio" name="race" value="Caucasian" id="ca" class="sr-only">
+            <label for="ca" class="block w-full">白人</label>
           </div>
-        </label>
+          <div>
+            <input type="radio" name="race" value="Black" id="bl" class="sr-only">
+            <label for="bl" class="block w-full">黒人</label>
+          </div>
+        </div>
       </div>
     </div>
 
-    <button id="generateBtn" disabled class="w-full bg-indigo-600 text-white font-bold py-3.5 px-4 rounded-xl hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-md">
-      &#x2728; 高精度・着せ替えを開始する
+    <button id="generateBtn" disabled class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold py-4 px-4 rounded-2xl hover:from-indigo-700 hover:to-purple-700 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+      &#x2728; 赤ちゃんを生成して着せ替える
     </button>
 
     <!-- ローディング表示 -->
-    <div id="loading" class="hidden mt-6 text-center">
-      <div class="inline-block animate-spin rounded-full h-10 w-10 border-4 border-indigo-200 border-t-indigo-600 mb-2"></div>
-      <p id="loadingStatus" class="text-indigo-700 font-bold text-sm">AIに画像生成をリクエスト中...</p>
-      <p class="text-xs text-gray-500 mt-1">※高精度な処理のため、30秒〜1分ほどかかる場合があります。</p>
+    <div id="loading" class="hidden mt-8 text-center bg-indigo-50 p-6 rounded-2xl border border-indigo-100">
+      <div class="relative w-16 h-16 mx-auto mb-4">
+        <div class="absolute inset-0 border-4 border-indigo-200 rounded-full animate-ping opacity-25"></div>
+        <div class="absolute inset-0 border-4 border-t-indigo-600 rounded-full animate-spin"></div>
+      </div>
+      <p id="loadingStatus" class="text-indigo-800 font-bold text-lg animate-pulse">AIが準備しています...</p>
+      <p id="loadingSubStatus" class="text-sm text-indigo-600 mt-2">しばらくお待ちください</p>
       
       <!-- 進捗バー -->
-      <div class="w-full bg-gray-200 rounded-full h-2.5 mt-4 overflow-hidden">
-        <div id="progressBar" class="bg-indigo-600 h-2.5 rounded-full w-10 transition-all duration-1000"></div>
+      <div class="w-full bg-gray-200 rounded-full h-3 mt-6 overflow-hidden relative">
+        <div id="progressBar" class="bg-gradient-to-r from-indigo-500 to-purple-500 h-3 rounded-full w-0 transition-all duration-700 ease-out"></div>
       </div>
     </div>
 
     <!-- エラー表示 -->
-    <div id="errorBox" class="hidden mt-5 p-4 bg-red-50 text-red-700 rounded-xl text-sm font-medium border border-red-100 text-center"></div>
+    <div id="errorBox" class="hidden mt-6 p-5 bg-red-50 text-red-700 rounded-2xl text-sm font-medium border border-red-200 text-center shadow-sm flex items-center justify-center gap-2">
+      <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+      <span id="errorMessage"></span>
+    </div>
 
     <!-- 結果表示 -->
-    <div id="resultContainer" class="hidden mt-8 pt-6 border-t border-gray-100 text-center">
-      <h2 class="text-lg font-bold text-gray-800 mb-4">&#x1F389; 着せ替えが完了しました！</h2>
-      <img id="resultImage" class="w-full rounded-2xl shadow-lg mx-auto mb-5" alt="生成された画像">
+    <div id="resultContainer" class="hidden mt-10 text-center">
+      <h2 class="text-xl font-extrabold text-gray-800 mb-6 flex items-center justify-center gap-2">
+        <span class="text-2xl">&#x1F389;</span> 完成しました！
+      </h2>
+      <div class="bg-white p-2 rounded-3xl shadow-lg border-2 border-indigo-50 inline-block">
+        <img id="resultImage" class="w-full max-w-md rounded-2xl" alt="生成された画像">
+      </div>
       
-      <button id="downloadBtn" class="w-full bg-green-600 text-white font-bold py-3.5 px-4 rounded-xl hover:bg-green-700 transition shadow-md flex items-center justify-center gap-2">
+      <button id="downloadBtn" class="mt-6 w-full sm:w-auto bg-green-500 text-white font-bold py-3 px-8 rounded-xl hover:bg-green-600 transition shadow-md flex items-center justify-center gap-2 mx-auto">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
         画像を保存する
       </button>
@@ -107,43 +122,54 @@
     const dropZone = document.getElementById('dropZone');
     const previewGarment = document.getElementById('previewGarment');
     const generateBtn = document.getElementById('generateBtn');
-    const garmentCategory = document.getElementById('garmentCategory');
     
     const loading = document.getElementById('loading');
     const loadingStatus = document.getElementById('loadingStatus');
+    const loadingSubStatus = document.getElementById('loadingSubStatus');
     const progressBar = document.getElementById('progressBar');
     
     const resultContainer = document.getElementById('resultContainer');
     const resultImage = document.getElementById('resultImage');
     const errorBox = document.getElementById('errorBox');
+    const errorMessage = document.getElementById('errorMessage');
     const downloadBtn = document.getElementById('downloadBtn');
 
     let currentDataUri = null;
 
-    // 画像ファイルの読み込み
+    // 画像ファイルの読み込み処理
     const handleFile = (file) => {
-      if (!file || !file.type.startsWith('image/')) return;
+      if (!file || !file.type.startsWith('image/')) {
+        showError("画像ファイルを選択してください。");
+        return;
+      }
       const reader = new FileReader();
       reader.onload = (event) => {
-        currentDataUri = event.target.result; // data:image/jpeg;base64,... の形式
+        currentDataUri = event.target.result;
         previewGarment.src = currentDataUri;
         previewGarment.classList.remove('hidden');
         generateBtn.disabled = false;
+        hideError();
         resultContainer.classList.add('hidden');
-        errorBox.classList.add('hidden');
       };
       reader.readAsDataURL(file);
     };
 
     imageInput.addEventListener('change', (e) => handleFile(e.target.files[0]));
     dropZone.addEventListener('click', () => imageInput.click());
+    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('border-indigo-500', 'bg-indigo-50'); });
+    dropZone.addEventListener('dragleave', (e) => { e.preventDefault(); dropZone.classList.remove('border-indigo-500', 'bg-indigo-50'); });
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('border-indigo-500', 'bg-indigo-50');
+      if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+    });
 
     // ダウンロード機能
     downloadBtn.addEventListener('click', () => {
       if (!resultImage.src) return;
       const a = document.createElement('a');
       a.href = resultImage.src;
-      a.download = `vton_${new Date().getTime()}.jpg`;
+      a.download = `baby_kisekae_${new Date().getTime()}.jpg`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -159,18 +185,33 @@
         });
         const data = await res.json();
 
+        if (!res.ok) throw new Error(data.error || 'ステータス確認に失敗しました');
+
         if (data.status === 'completed') {
+          // 成功！
           resultImage.src = data.output[0];
-          loading.classList.add('hidden');
-          resultContainer.classList.remove('hidden');
-          generateBtn.disabled = false;
+          updateProgress(100, "完成しました！", "表示の準備をしています...");
+          setTimeout(() => {
+            loading.classList.add('hidden');
+            resultContainer.classList.remove('hidden');
+            generateBtn.disabled = false;
+            // 画面一番下へスクロール
+            resultContainer.scrollIntoView({ behavior: 'smooth' });
+          }, 1000);
+
         } else if (data.status === 'failed') {
-          throw new Error('AI側で画像の合成に失敗しました。別の服の画像でお試しください。');
+          // 失敗
+          throw new Error(data.error?.message || 'AI側で合成に失敗しました。別の画像でお試しください。');
+
         } else {
-          loadingStatus.textContent = "AIが洋服の合成計算を行っています...";
-          let currentWidth = parseInt(progressBar.style.width || '10');
-          if(currentWidth < 90) progressBar.style.width = `${currentWidth + 10}%`;
-          setTimeout(() => checkStatus(jobId), 3000);
+          // 処理中...
+          updateProgress(
+            Math.min(parseInt(progressBar.style.width) + 15, 90),
+            "AIが洋服を着せています...",
+            "高精度な処理のため、もう少しかかります"
+          );
+          // 4秒後に再確認
+          setTimeout(() => checkStatus(jobId), 4000);
         }
       } catch (err) {
         showError(err.message);
@@ -178,34 +219,45 @@
     };
 
     const showError = (msg) => {
-      errorBox.textContent = msg;
+      errorMessage.textContent = msg;
       errorBox.classList.remove('hidden');
       loading.classList.add('hidden');
       generateBtn.disabled = false;
+    }
+    const hideError = () => {
+      errorBox.classList.add('hidden');
+    }
+
+    const updateProgress = (percent, status, subStatus) => {
+      progressBar.style.width = `${percent}%`;
+      loadingStatus.textContent = status;
+      if (subStatus) loadingSubStatus.textContent = subStatus;
     }
 
     // 生成ボタンのクリック処理
     generateBtn.addEventListener('click', async () => {
       if (!currentDataUri) return;
       
-      const selectedModel = document.querySelector('input[name="modelImage"]:checked').value;
+      const gender = document.querySelector('input[name="gender"]:checked').value;
+      const race = document.querySelector('input[name="race"]:checked').value;
 
       generateBtn.disabled = true;
       loading.classList.remove('hidden');
       resultContainer.classList.add('hidden');
-      errorBox.classList.add('hidden');
-      progressBar.style.width = '10%';
-      loadingStatus.textContent = "AIに画像生成をリクエスト中...";
+      hideError();
+      
+      updateProgress(10, "AIにリクエストを送信中...", "まずは赤ちゃんのモデル画像を生成します");
 
       try {
-        // ステップ1: ジョブの開始
+        // ジョブの開始リクエスト
         const res = await fetch('/api/generate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             action: 'start',
-            modelImage: selectedModel,
-            garmentImageBase64: currentDataUri
+            garmentImageBase64: currentDataUri,
+            gender: gender,
+            race: race
           })
         });
         
@@ -213,11 +265,10 @@
         if (!res.ok) throw new Error(data.error || '通信エラーが発生しました');
 
         const jobId = data.jobId;
-        progressBar.style.width = '20%';
-        loadingStatus.textContent = "ジョブが登録されました。待機中...";
+        updateProgress(40, "赤ちゃんの生成が完了しました", "次に、Fashn.aiで着せ替えを開始します...");
 
-        // ステップ2: 完了するまで数秒おきに確認開始
-        setTimeout(() => checkStatus(jobId), 3000);
+        // 完了するまでポーリング開始
+        setTimeout(() => checkStatus(jobId), 4000);
 
       } catch (err) {
         showError(err.message);
