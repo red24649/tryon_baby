@@ -27,11 +27,11 @@ export default async function handler(req, res) {
     if (action === 'start') {
       const { garmentImageBase64, gender, race, sleeveLength, pantsLength, itemType, pose } = req.body;
 
-      // --- 追加・改善：人種のプロンプトをより明確に強調 ---
+      // --- 改善：ハーフ系のプロンプトを「少し欧米寄り」に調整 ---
       let raceDescription = race;
       if (race === 'half-Caucasian, half-Japanese') {
-        // 日本人に寄りすぎるのを防ぐため、欧米とのミックスであることを強く指示する
-        raceDescription = "Eurasian mixed-race (half Caucasian and half Japanese) with beautifully blended facial features";
+        // 白人の特徴を少し強めに出し、髪色を柔らかなブラウンに指定して欧米感を高める
+        raceDescription = "Eurasian mixed-race (Caucasian-Japanese blend), leaning slightly more towards Caucasian facial features with soft brown hair";
       } else if (race === 'Japanese') {
         raceDescription = "fully Japanese";
       } else if (race === 'Caucasian') {
@@ -82,7 +82,6 @@ export default async function handler(req, res) {
       console.log("Generating baby image...");
       const imagenUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${geminiApiKey}`;
       
-      // プロンプトに raceDescription を使用
       const babyPrompt = `A professional studio photograph of a cute ${raceDescription} ${gender} baby, about 6-12 months old, ${postureDescription}. The baby is on a soft, plush, textured cream-colored rug or blanket. Wide angle shot, zoomed out. The ENTIRE head, face, and body MUST be completely visible inside the frame with plenty of negative space above the head. The baby MUST be wearing ${outfitDescription} with ${chestDescription}. The baby has ${armsDescription} and ${legsDescription}. Bareheaded, strictly NO hats or hair accessories. The lighting is ${lightingDescription}. The background is a simple, neutral color with wide margins. High resolution, highly detailed, realistic.`;
 
       const imagenResponse = await fetch(imagenUrl, {
