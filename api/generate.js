@@ -22,7 +22,7 @@ export default async function handler(req, res) {
 
       // 1-1. まず、GoogleのAI (Imagen) で赤ちゃんの画像を生成する
       console.log("Generating baby image...");
-      const imagenUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-001:predict?key=${geminiApiKey}`;
+      const imagenUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${geminiApiKey}`;
       const babyPrompt = `A professional photograph of a cute ${race} ${gender} baby, about 6-12 months old, sitting happily in a brightly lit, neutral studio setting with a plain background. Full body shot, facing forward. High resolution.`;
 
       const imagenResponse = await fetch(imagenUrl, {
