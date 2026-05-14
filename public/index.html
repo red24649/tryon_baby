@@ -333,7 +333,7 @@
       try {
         const processedImageBase64 = await addPaddingToImage(currentDataUri, itemType === 'bib');
 
-        updateProgress(20, "AIにリクエストを送信中...", "まずはベビーちゃんのモデル画像を生成します");
+        updateProgress(20, "AIにリクエストを送信中...", "ベビーちゃんのモデル画像を生成しています");
 
         const res = await fetch('/api/generate', {
           method: 'POST',
