@@ -26,10 +26,10 @@ export default async function handler(req, res) {
       let postureDescription = "sitting happily on the floor, facing forward";
 
       if (itemType === 'bib') {
-        // スタイが体にフィットしやすくなるよう、首周りをすっきりさせ、少し見上げるような姿勢に調整
-        outfitDescription = "a simple, perfectly plain white short-sleeve t-shirt with a slightly lower, rounded neckline";
-        chestDescription = "a clear, unobstructed upper chest and neck area, perfect for wearing a bib";
-        postureDescription = "sitting happily, slightly looking up to show the neck clearly";
+        // 自然な姿勢に戻しつつ、服のシワがスタイの邪魔をしないように平らな胸元を指示
+        outfitDescription = "a simple, perfectly plain white short-sleeve bodysuit";
+        chestDescription = "a perfectly smooth, flat white fabric over the chest";
+        postureDescription = "sitting happily on the floor, perfectly facing forward, upright posture";
       } else {
         if (sleeveLength === 'sleeveless') {
           outfitDescription = "a simple, plain white tight-fitting sleeveless bodysuit";
