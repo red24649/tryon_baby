@@ -222,38 +222,35 @@
       if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
     });
 
-    // 【改善】画像を別タブで開かず、直接ダウンロードさせる処理に変更
+    // 画像を直接ダウンロードさせ、指定のファイル名「tryon_baby_ミリ秒.jpg」で保存する処理
     downloadBtn.addEventListener('click', async () => {
       if (!resultImage.src) return;
       
       const originalText = downloadBtn.innerHTML;
-      // ボタンを「準備中」の表示に変更
       downloadBtn.innerHTML = '<svg class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><span>保存の準備中...</span>';
       downloadBtn.disabled = true;
 
       try {
-        // 画像URLからデータを取得し、ブラウザ上で扱えるBlob(ファイル形式)に変換
         const response = await fetch(resultImage.src);
         if (!response.ok) throw new Error("Network response was not ok");
         const blob = await response.blob();
         
-        // Blobからローカル用の一時URLを作成
         const url = window.URL.createObjectURL(blob);
-        
         const a = document.createElement('a');
         a.href = url;
-        a.download = `baby_kisekae_${new Date().getTime()}.jpg`; // 保存時のファイル名
+        
+        // ファイル名の命名ルールを変更
+        a.download = `tryon_baby_${new Date().getTime()}.jpg`;
+        
         document.body.appendChild(a);
         a.click();
         
-        // 処理が終わったら一時URLを削除してメモリを解放
         document.body.removeChild(a);
         window.URL.revokeObjectURL(url);
       } catch (error) {
         console.error("ダウンロードエラー:", error);
         alert("画像の保存に失敗しました。\nお手数ですが、画像を長押し（または右クリック）して保存してください。");
       } finally {
-        // ボタンの見た目を元に戻す
         downloadBtn.innerHTML = originalText;
         downloadBtn.disabled = false;
       }
@@ -318,6 +315,7 @@
       if (subStatus) loadingSubStatus.textContent = subStatus;
     }
 
+    // 画像リサイズ処理（Vercelの通信制限クリアのため）
     const processImage = (dataUri, isBib) => {
       return new Promise((resolve) => {
         const img = new Image();
@@ -326,6 +324,7 @@
           let w = img.width;
           let h = img.height;
 
+          // 上限1024pxにリサイズ
           const MAX_SIZE = 1024;
           if (w > MAX_SIZE || h > MAX_SIZE) {
             const ratio = Math.min(MAX_SIZE / w, MAX_SIZE / h);
@@ -338,6 +337,7 @@
             canvas.height = h;
             const ctx = canvas.getContext('2d');
             ctx.drawImage(img, 0, 0, w, h);
+            // 圧縮率0.85のJPEG
             resolve(canvas.toDataURL('image/jpeg', 0.85));
           } else {
             const paddingRatio = 2.0; 
@@ -352,6 +352,7 @@
             const y = canvas.height * 0.25; 
             ctx.drawImage(img, x, y, w, h);
             
+            // 圧縮率0.85のJPEG
             resolve(canvas.toDataURL('image/jpeg', 0.85));
           }
         };
@@ -394,6 +395,7 @@
           })
         });
         
+        // 通信エラーハンドリング
         if (!res.ok) {
           const errText = await res.text();
           if (res.status === 413 || errText.includes('Request Entity Too Large')) {
@@ -405,7 +407,7 @@
         const data = await res.json();
 
         const jobId = data.jobId;
-        updateProgress(50, "モデルの生成が完了しました", "アイテムの合成を開始します...");
+        updateProgress(50, "モデルの生成が完了しました", "次に、Fashn.aiでアイテムの合成を開始します...");
 
         setTimeout(() => checkStatus(jobId), 4000);
 
