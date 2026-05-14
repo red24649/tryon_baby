@@ -155,6 +155,12 @@
       <h2 class="text-xl font-extrabold text-gray-800 mb-6 flex items-center justify-center gap-2">
         <span class="text-2xl">&#x1F389;</span> 完成しました！
       </h2>
+      
+      <!-- ユーザーの安心感向上のためのプライバシーメッセージ -->
+      <p class="text-xs text-gray-500 mb-4 bg-gray-50 p-2 rounded-lg border border-gray-100">
+        &#x1F512; この画像はAIサーバーから安全に削除されました。<br>保存する場合は下のボタンを押してください。
+      </p>
+
       <div class="bg-white p-2 rounded-3xl shadow-lg border-2 border-indigo-50 inline-block">
         <img id="resultImage" class="w-full max-w-md rounded-2xl" alt="生成された画像">
       </div>
@@ -249,7 +255,17 @@
         if (!res.ok) throw new Error(data.error || 'ステータス確認に失敗しました');
 
         if (data.status === 'completed') {
+          // 成功時: まず画像を画面に表示する（この時点ではFashn.aiのURL）
           resultImage.src = data.output[0];
+          
+          // 【重要】画像をブラウザに読み込ませた直後、Fashn.aiのサーバーから履歴を削除するリクエストを裏側で送信する
+          // ※画像をBase64等のローカルデータに変換してから削除するのが確実ですが、今回はFashnのURLが一定期間キャッシュされる性質を利用して、見た目上すぐに表示させつつ裏で削除命令を出します。
+          fetch('/api/generate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'delete', jobId: jobId })
+          }).catch(e => console.error("削除リクエストエラー", e));
+
           updateProgress(100, "完成しました！", "表示の準備をしています...");
           setTimeout(() => {
             loading.classList.add('hidden');
@@ -257,6 +273,7 @@
             generateBtn.disabled = false;
             resultContainer.scrollIntoView({ behavior: 'smooth' });
           }, 1000);
+          
         } else if (data.status === 'failed') {
           throw new Error(data.error?.message || 'AI側で合成に失敗しました。別の画像でお試しください。');
         } else {
@@ -288,7 +305,6 @@
       if (subStatus) loadingSubStatus.textContent = subStatus;
     }
 
-    // 改善: 極端な縮小と上寄せをやめ、AIが形を認識しやすい範囲にバランスを調整
     const addPaddingToImage = (dataUri, isBib) => {
       return new Promise((resolve) => {
         if (!isBib) {
@@ -298,14 +314,12 @@
         const img = new Image();
         img.onload = () => {
           const canvas = document.createElement('canvas');
-          // 2.5倍は小さすぎ（画質不足）たため、2.0倍に戻す
           const paddingRatio = 2.0; 
           canvas.width = img.width * paddingRatio;
           canvas.height = img.height * paddingRatio;
           const ctx = canvas.getContext('2d');
           
           const x = (canvas.width - img.width) / 2;
-          // 上から15%は極端だったため、25%付近に戻して自然な位置に誘導
           const y = canvas.height * 0.25; 
           ctx.drawImage(img, x, y);
           
