@@ -16,8 +16,9 @@ export default async function handler(req, res) {
   }
 
   try {
-    // 【ステップ1】Gemini 1.5 Flashで服の画像を分析し、デザインを言語化する
-    const visionUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+    // 【ステップ1】最新のGeminiモデルで服の画像を分析し、デザインを言語化する
+    // ※ 404エラーを防ぐため、最新の gemini-2.5-flash モデルを指定
+    const visionUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
     const visionPrompt = "Analyze this image and describe the clothing or accessory in extreme detail. Focus on the colors, patterns, texture, and style. Keep it concise but highly descriptive so another AI can draw it accurately.";
     
     const visionPayload = {
@@ -36,15 +37,17 @@ export default async function handler(req, res) {
       body: JSON.stringify(visionPayload)
     });
 
+    // エラーが起きた場合、詳細なエラーメッセージを取得して表示する
     if (!visionResponse.ok) {
-      throw new Error(`Vision API Error: ${visionResponse.status}`);
+      const errorText = await visionResponse.text();
+      throw new Error(`Vision API Error (${visionResponse.status}): ${errorText}`);
     }
 
     const visionData = await visionResponse.json();
     const clothesDescription = visionData.candidates[0].content.parts[0].text;
 
-    // 【ステップ2】一般公開されている画像生成モデル（Imagen）で最終画像を生成する
-    const imagenUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-001:predict?key=${apiKey}`;
+    // 【ステップ2】最新のImagenモデル（imagen-4.0）で画像を生成する
+    const imagenUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${apiKey}`;
     
     // 元の指示文（赤ちゃんの特徴など）と、服のデザイン説明を合体
     const finalPrompt = `${prompt} The baby is wearing EXACTLY this: ${clothesDescription}`;
@@ -65,7 +68,8 @@ export default async function handler(req, res) {
     });
 
     if (!imagenResponse.ok) {
-      throw new Error(`Imagen API Error: ${imagenResponse.status}`);
+      const errorText = await imagenResponse.text();
+      throw new Error(`Imagen API Error (${imagenResponse.status}): ${errorText}`);
     }
 
     const imagenData = await imagenResponse.json();
