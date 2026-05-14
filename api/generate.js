@@ -11,7 +11,6 @@ export default async function handler(req, res) {
   const { action } = req.body;
 
   try {
-    // 【ステップ1】生成の開始リクエスト（ジョブの登録）
     if (action === 'start') {
       const { modelImage, garmentImageBase64, category } = req.body;
       
@@ -22,20 +21,24 @@ export default async function handler(req, res) {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          model_image: modelImage, // 赤ちゃんモデルの画像URL
-          garment_image: garmentImageBase64, // アップロードされた服の画像（Data URI形式）
-          category: category // tops, bottoms, one-pieces など
+          model_image: modelImage,
+          garment_image: garmentImageBase64,
+          category: category
         })
       });
 
+      // APIからのレスポンスをすべて取得
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error?.message || '生成の開始に失敗しました');
       
-      // ジョブIDをフロントエンドに返す
+      // エラーだった場合、Fashn.aiからの詳細なメッセージをそのままエラーとして投げる
+      if (!response.ok) {
+        const errorDetail = data.error?.message || data.message || JSON.stringify(data);
+        throw new Error(`Fashn APIエラー (${response.status}): ${errorDetail}`);
+      }
+      
       return res.status(200).json({ jobId: data.id });
     }
     
-    // 【ステップ2】生成状態の確認リクエスト（ポーリング）
     else if (action === 'status') {
       const { jobId } = req.body;
       
@@ -47,9 +50,11 @@ export default async function handler(req, res) {
       });
 
       const data = await response.json();
-      if (!response.ok) throw new Error('ステータス確認に失敗しました');
+      if (!response.ok) {
+        const errorDetail = data.error?.message || data.message || JSON.stringify(data);
+        throw new Error(`ステータス確認エラー (${response.status}): ${errorDetail}`);
+      }
 
-      // status: 'starting', 'processing', 'completed', 'failed'
       return res.status(200).json(data);
     }
     
@@ -62,3 +67,6 @@ export default async function handler(req, res) {
     res.status(500).json({ error: error.message });
   }
 }
+
+// Vercelのタイムアウト時間を最大60秒に延長
+export const maxDuration = 60;
