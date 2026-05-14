@@ -1,21 +1,19 @@
-// ƒT[ƒo[‘¤‚ÅˆÀ‘S‚ÉAI‚ğŒÄ‚Ño‚·ƒvƒƒOƒ‰ƒ€
+// ã‚µãƒ¼ãƒãƒ¼å´ã§å®‰å…¨ã«AIã‚’å‘¼ã³å‡ºã™ãƒ—ãƒ­ã‚°ãƒ©ãƒ 
 export default async function handler(req, res) {
-  // POSTƒŠƒNƒGƒXƒgˆÈŠO‚Í’e‚­
+  // POSTãƒªã‚¯ã‚¨ã‚¹ãƒˆä»¥å¤–ã¯å¼¾ã
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
-  // ƒtƒƒ“ƒgƒGƒ“ƒh‚©‚ç‘—‚ç‚ê‚Ä‚«‚½‰æ‘œƒf[ƒ^‚ğó‚¯æ‚é
-  const { imageBase64, mimeType } = req.body;
+  // ãƒ•ãƒ­ãƒ³ãƒˆã‚¨ãƒ³ãƒ‰ï¼ˆç”»é¢ï¼‰ã‹ã‚‰é€ã‚‰ã‚Œã¦ããŸæŒ‡ç¤ºã¨ç”»åƒã‚’å—ã‘å–ã‚‹
+  const { prompt, imageBase64, mimeType } = req.body;
   
-  // Vercel‚ÌŠÂ‹«•Ï”‚©‚çAPIƒL[‚ğ“Ç‚İ‚ŞiƒR[ƒh‚É‚Í’¼Ú‘‚«‚Ü‚¹‚ñIj
+  // ç’°å¢ƒå¤‰æ•°ã‹ã‚‰APIã‚­ãƒ¼ã‚’èª­ã¿è¾¼ã‚€ï¼ˆã‚³ãƒ¼ãƒ‰ã«ã¯ç›´æ¥æ›¸ãã¾ã›ã‚“ï¼ï¼‰
   const apiKey = process.env.GEMINI_API_KEY;
 
   if (!apiKey) {
-    return res.status(500).json({ error: 'ƒT[ƒo[‚ÌAPIƒL[‚ªİ’è‚³‚ê‚Ä‚¢‚Ü‚¹‚ñB' });
+    return res.status(500).json({ error: 'ã‚µãƒ¼ãƒãƒ¼ã®APIã‚­ãƒ¼ãŒè¨­å®šã•ã‚Œã¦ã„ã¾ã›ã‚“ã€‚' });
   }
-
-  const prompt = "A cute, happy Japanese baby wearing the exact clothes shown in the provided image. High quality, photorealistic portrait of a baby, isolated on a pure white background, no background elements.";
 
   const payload = {
     contents: [{
@@ -46,7 +44,7 @@ export default async function handler(req, res) {
     const data = await response.json();
     res.status(200).json(data);
   } catch (error) {
-    console.error("¶¬ƒGƒ‰[:", error);
-    res.status(500).json({ error: '‰æ‘œ‚Ì¶¬‚É¸”s‚µ‚Ü‚µ‚½B' });
+    console.error("ç”Ÿæˆã‚¨ãƒ©ãƒ¼:", error);
+    res.status(500).json({ error: 'ç”»åƒã®ç”Ÿæˆã«å¤±æ•—ã—ã¾ã—ãŸã€‚' });
   }
 }
