@@ -101,6 +101,25 @@ export default async function handler(req, res) {
       console.log("Baby image generated successfully.");
 
       console.log("Starting Fashn.ai job...");
+
+      // =================================================================
+      // ★ ここでFashn.aiのモデル（クレジット消費）を切り替えられます
+      // =================================================================
+      // "tryon-max" : 最高精度モデル（1回 2クレジット）※推奨
+      // "tryon-v1.6": 標準モデル（1回 1クレジット）
+      const selectedModel = "tryon-max"; 
+
+      // Fashn.aiに送る画像データ（モデルによって名前のルールが違うため自動切替）
+      const fashnInputs = {
+        model_image: generatedBabyImage
+      };
+      
+      if (selectedModel === "tryon-max") {
+        fashnInputs.product_image = garmentImageBase64; // maxモデル用の名前
+      } else {
+        fashnInputs.garment_image = garmentImageBase64; // v1.6モデル用の名前
+      }
+
       const fashnResponse = await fetch('https://api.fashn.ai/v1/run', {
         method: 'POST',
         headers: {
@@ -108,17 +127,8 @@ export default async function handler(req, res) {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          // クレジット消費を抑えるため最新の標準モデルに変更（1回1クレジット）
-          // model_name: "tryon-v1.6",
-          
-          // 最高精度モデル（1回2クレジット）に戻す場合はこちらを有効化してください
-          model_name: "tryon-max",
-          
-          inputs: {
-            model_image: generatedBabyImage,
-            // 修正：新しい仕様に合わせて product_image から garment_image に変更
-            garment_image: garmentImageBase64
-          }
+          model_name: selectedModel,
+          inputs: fashnInputs
         })
       });
 
