@@ -392,7 +392,7 @@
         const data = await res.json();
 
         const jobId = data.jobId;
-        updateProgress(50, "モデルの生成が完了しました", "次に、Fashn.aiでアイテムの合成を開始します...");
+        updateProgress(50, "モデルの生成が完了しました", "アイテムの合成を開始します...");
 
         setTimeout(() => checkStatus(jobId), 4000);
 
