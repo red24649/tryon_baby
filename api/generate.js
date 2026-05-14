@@ -8,7 +8,7 @@ export default async function handler(req, res) {
   // フロントエンド（画面）から送られてきた指示と画像を受け取る
   const { prompt, imageBase64, mimeType } = req.body;
   
-  // 環境変数からAPIキーを読み込む（コードには直接書きません！）
+  // 環境変数からAPIキーを読み込む
   const apiKey = process.env.GEMINI_API_KEY;
 
   if (!apiKey) {
@@ -48,3 +48,6 @@ export default async function handler(req, res) {
     res.status(500).json({ error: '画像の生成に失敗しました。' });
   }
 }
+
+// 【重要】Vercelのタイムアウト時間を最大60秒に延長する設定
+export const maxDuration = 60;
