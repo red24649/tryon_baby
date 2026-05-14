@@ -29,7 +29,6 @@
     <div class="mb-8">
       <label class="block text-sm font-bold text-gray-800 mb-2">&#x2460; 着せたいアイテムの画像をアップロード</label>
       
-      <!-- 色味向上のための注意書きを追加 -->
       <div class="bg-yellow-50 border-l-4 border-yellow-400 p-3 mb-3 text-xs text-yellow-800 rounded-r-lg">
         <strong>💡 色を正確に再現するコツ:</strong><br>
         複数の服が写っているとAIの処理で色が混ざってしまいます。スマホの写真アプリ等で<strong>「着せたい服が1着だけ写るようにトリミング（切り抜き）」</strong>した画像をお使いください。
@@ -288,7 +287,7 @@
       if (subStatus) loadingSubStatus.textContent = subStatus;
     }
 
-    // 改善: 白塗りつぶしをやめ、透明(PNG)のまま余白だけを追加する
+    // 改善: スタイのサイズをさらに小さくし、配置を上（首元）に寄せる
     const addPaddingToImage = (dataUri, isBib) => {
       return new Promise((resolve) => {
         if (!isBib) {
@@ -298,18 +297,17 @@
         const img = new Image();
         img.onload = () => {
           const canvas = document.createElement('canvas');
-          const paddingRatio = 2.0; 
+          // 倍率を2.5に上げて、画像内のスタイの相対サイズをさらに小さくする
+          const paddingRatio = 2.5; 
           canvas.width = img.width * paddingRatio;
           canvas.height = img.height * paddingRatio;
           const ctx = canvas.getContext('2d');
           
-          // 背景は透明のままにする（塗りつぶし処理を削除）
-          
           const x = (canvas.width - img.width) / 2;
-          const y = (canvas.height - img.height) / 3; 
+          // 中央ではなく、上から15%の位置に配置して首元への合成を誘導
+          const y = canvas.height * 0.15; 
           ctx.drawImage(img, x, y);
           
-          // 色飛びを防ぐため、透過情報を持ったPNG形式で出力
           resolve(canvas.toDataURL('image/png'));
         };
         img.src = dataUri;
