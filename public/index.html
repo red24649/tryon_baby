@@ -28,7 +28,6 @@
     <!-- 1. 服の画像アップロード -->
     <div class="mb-8">
       <label class="block text-sm font-bold text-gray-800 mb-2">&#x2460; 着せたいアイテムの画像をアップロード</label>
-
       <div id="dropZone" class="border-2 border-dashed border-indigo-300 rounded-2xl p-8 text-center hover:bg-indigo-50 transition cursor-pointer flex flex-col items-center justify-center bg-gray-50 group">
         <div class="bg-white p-3 rounded-full shadow-sm mb-4 group-hover:scale-110 transition">
           <svg class="w-8 h-8 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
@@ -100,7 +99,7 @@
         </div>
       </div>
 
-      <div>
+      <div class="mb-4">
         <p class="text-xs text-gray-600 font-bold mb-2 ml-1">タイプ</p>
         <div class="grid grid-cols-3 gap-3 radio-group">
           <div>
@@ -114,6 +113,25 @@
           <div>
             <input type="radio" name="race" value="Caucasian" id="ca" class="sr-only">
             <label for="ca" class="block w-full">欧米系</label>
+          </div>
+        </div>
+      </div>
+
+      <!-- 追加: ポーズ選択 -->
+      <div id="poseDetailSection">
+        <p class="text-xs text-gray-600 font-bold mb-2 ml-1">ポーズ</p>
+        <div class="grid grid-cols-3 gap-3 radio-group">
+          <div>
+            <input type="radio" name="pose" value="sitting_front" id="poseFront" class="sr-only" checked>
+            <label for="poseFront" class="block w-full px-2">おすわり<br><span class="text-xs font-normal">(正面)</span></label>
+          </div>
+          <div>
+            <input type="radio" name="pose" value="sitting_side" id="poseSide" class="sr-only">
+            <label for="poseSide" class="block w-full px-2">おすわり<br><span class="text-xs font-normal">(斜め)</span></label>
+          </div>
+          <div>
+            <input type="radio" name="pose" value="standing" id="poseStand" class="sr-only">
+            <label for="poseStand" class="block w-full px-2">つかまり<br><span class="text-xs font-normal">立ち</span></label>
           </div>
         </div>
       </div>
@@ -181,6 +199,7 @@
     const sleeveLength = document.getElementById('sleeveLength');
     const pantsLength = document.getElementById('pantsLength');
     const clothesDetailSection = document.getElementById('clothesDetailSection');
+    const poseDetailSection = document.getElementById('poseDetailSection');
 
     let currentDataUri = null;
 
@@ -189,8 +208,10 @@
       radio.addEventListener('change', (e) => {
         if (e.target.value === 'bib') {
           clothesDetailSection.classList.add('disabled-section');
+          poseDetailSection.classList.add('disabled-section');
         } else {
           clothesDetailSection.classList.remove('disabled-section');
+          poseDetailSection.classList.remove('disabled-section');
         }
       });
     });
@@ -222,7 +243,6 @@
       if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
     });
 
-    // 画像を直接ダウンロードさせ、指定のファイル名「tryon_baby_ミリ秒.jpg」で保存する処理
     downloadBtn.addEventListener('click', async () => {
       if (!resultImage.src) return;
       
@@ -239,7 +259,6 @@
         const a = document.createElement('a');
         a.href = url;
         
-        // ファイル名の命名ルールを変更
         a.download = `tryon_baby_${new Date().getTime()}.jpg`;
         
         document.body.appendChild(a);
@@ -315,7 +334,6 @@
       if (subStatus) loadingSubStatus.textContent = subStatus;
     }
 
-    // 画像リサイズ処理（Vercelの通信制限クリアのため）
     const processImage = (dataUri, isBib) => {
       return new Promise((resolve) => {
         const img = new Image();
@@ -324,7 +342,6 @@
           let w = img.width;
           let h = img.height;
 
-          // 上限1024pxにリサイズ
           const MAX_SIZE = 1024;
           if (w > MAX_SIZE || h > MAX_SIZE) {
             const ratio = Math.min(MAX_SIZE / w, MAX_SIZE / h);
@@ -337,7 +354,6 @@
             canvas.height = h;
             const ctx = canvas.getContext('2d');
             ctx.drawImage(img, 0, 0, w, h);
-            // 圧縮率0.85のJPEG
             resolve(canvas.toDataURL('image/jpeg', 0.85));
           } else {
             const paddingRatio = 2.0; 
@@ -352,7 +368,6 @@
             const y = canvas.height * 0.25; 
             ctx.drawImage(img, x, y, w, h);
             
-            // 圧縮率0.85のJPEG
             resolve(canvas.toDataURL('image/jpeg', 0.85));
           }
         };
@@ -368,6 +383,7 @@
       const sLen = sleeveLength.value;
       const pLen = pantsLength.value;
       const itemType = document.querySelector('input[name="itemType"]:checked').value;
+      const pose = document.querySelector('input[name="pose"]:checked').value; // 追加: ポーズ取得
 
       generateBtn.disabled = true;
       loading.classList.remove('hidden');
@@ -391,11 +407,11 @@
             race: race,
             sleeveLength: sLen,
             pantsLength: pLen,
-            itemType: itemType
+            itemType: itemType,
+            pose: pose // 追加: ポーズをAPIに送信
           })
         });
         
-        // 通信エラーハンドリング
         if (!res.ok) {
           const errText = await res.text();
           if (res.status === 413 || errText.includes('Request Entity Too Large')) {
