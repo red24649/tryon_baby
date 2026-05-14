@@ -261,7 +261,7 @@
         } else {
           updateProgress(
             Math.min(parseInt(progressBar.style.width) + 15, 90),
-            "AIが頑張って合成しています...",
+            "AIががんばって合成しています...",
             "高精度な処理のため、もう少しかかります"
           );
           setTimeout(() => checkStatus(jobId), 4000);
@@ -333,7 +333,7 @@
       try {
         const processedImageBase64 = await addPaddingToImage(currentDataUri, itemType === 'bib');
 
-        updateProgress(20, "AIにリクエストを送信中...", "まずは赤ちゃんのモデル画像を生成します");
+        updateProgress(20, "AIにリクエストを送信中...", "まずはベビーちゃんのモデル画像を生成します");
 
         const res = await fetch('/api/generate', {
           method: 'POST',
@@ -353,7 +353,7 @@
         if (!res.ok) throw new Error(data.error || '通信エラーが発生しました');
 
         const jobId = data.jobId;
-        updateProgress(50, "赤ちゃんの生成が完了しました", "次に、Fashn.aiでアイテムの合成を開始します...");
+        updateProgress(50, "モデルの生成が完了しました", "次に、Fashn.aiでアイテムの合成を開始します...");
 
         setTimeout(() => checkStatus(jobId), 4000);
 
