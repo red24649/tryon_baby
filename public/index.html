@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>高精度ベビー着せ替えメーカー</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <style>
+  <!-- type="text/tailwindcss" を追加して、@applyが効くように修正 -->
+  <style type="text/tailwindcss">
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
     /* カスタムラジオボタンのデザイン */
     .radio-group label {
@@ -58,19 +59,19 @@
       </div>
 
       <div>
-        <p class="text-xs text-gray-600 font-bold mb-2 ml-1">国籍・ルーツ</p>
+        <p class="text-xs text-gray-600 font-bold mb-2 ml-1">タイプ</p>
         <div class="grid grid-cols-3 gap-3 radio-group">
           <div>
             <input type="radio" name="race" value="Japanese" id="jp" class="sr-only" checked>
             <label for="jp" class="block w-full">日本人</label>
           </div>
           <div>
-            <input type="radio" name="race" value="Caucasian" id="ca" class="sr-only">
-            <label for="ca" class="block w-full">白人</label>
+            <input type="radio" name="race" value="half-Caucasian, half-Japanese" id="half" class="sr-only">
+            <label for="half" class="block w-full">白人ハーフ</label>
           </div>
           <div>
-            <input type="radio" name="race" value="Black" id="bl" class="sr-only">
-            <label for="bl" class="block w-full">黒人</label>
+            <input type="radio" name="race" value="Caucasian" id="ca" class="sr-only">
+            <label for="ca" class="block w-full">白人</label>
           </div>
         </div>
       </div>
