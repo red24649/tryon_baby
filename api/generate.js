@@ -1,11 +1,11 @@
 // Vercelのタイムアウト時間を最大60秒に延長
 export const maxDuration = 60;
 
-// 【追加】Vercelの受信データサイズ制限を1MBから10MBに引き上げる
+// Vercelの受信データサイズ制限を引き上げる（※無料プランの実際の最大上限は4.5MBです）
 export const config = {
   api: {
     bodyParser: {
-      sizeLimit: '10mb',
+      sizeLimit: '4.5mb',
     },
   },
 };
@@ -102,12 +102,12 @@ export default async function handler(req, res) {
         })
       });
 
-      const fashnData = await fashnResponse.json();
-      
+      // エラー時にパースで落ちないように、JSON変換の前にチェックを行う
       if (!fashnResponse.ok) {
-        const errorDetail = fashnData.error?.message || fashnData.message || JSON.stringify(fashnData);
+        const errorDetail = await fashnResponse.text();
         throw new Error(`Fashn APIエラー (着画生成開始失敗): ${errorDetail}`);
       }
+      const fashnData = await fashnResponse.json();
       
       return res.status(200).json({ jobId: fashnData.id });
     }
@@ -119,11 +119,11 @@ export default async function handler(req, res) {
         headers: { 'Authorization': `Bearer ${fashnApiKey}` }
       });
 
-      const data = await response.json();
       if (!response.ok) {
-        const errorDetail = data.error?.message || data.message || JSON.stringify(data);
+        const errorDetail = await response.text();
         throw new Error(`ステータス確認エラー: ${errorDetail}`);
       }
+      const data = await response.json();
       return res.status(200).json(data);
     }
     
