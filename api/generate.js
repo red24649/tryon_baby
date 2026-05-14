@@ -34,9 +34,9 @@ export default async function handler(req, res) {
       let postureDescription = "sitting happily on the floor, perfectly facing forward, upright posture";
       let lightingDescription = "soft and natural lighting";
 
-      // 追加：ポーズに応じた姿勢の指示
+      // 改善：ポーズの指示をより自然な「斜め」に修正
       if (pose === 'sitting_side') {
-        postureDescription = "sitting happily on the floor, body angled slightly to the side, turning head to look at the camera";
+        postureDescription = "sitting happily on the floor, in a relaxed and natural posture, with the body angled slightly diagonally to the camera (3/4 profile view)";
       } else if (pose === 'standing') {
         postureDescription = "standing up, holding onto a small soft white baby sofa or padded prop for support, looking at the camera";
       }
