@@ -79,7 +79,9 @@ export default async function handler(req, res) {
       }
 
       console.log("Generating baby image...");
-      const imagenUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${geminiApiKey}`;
+      // Imagen4系(imagen-4.0-generate-001)は2026年8月17日付けでシャットダウン済みのため、
+      // Gemini画像生成モデル(Nano Banana系)の generateContent エンドポイントに切り替え
+      const imagenUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image:generateContent?key=${geminiApiKey}`;
       
       const babyPrompt = `A professional studio photograph of a cute ${raceDescription} ${gender} baby, about 6-12 months old, ${postureDescription}. The baby is on a soft, plush, textured cream-colored rug or blanket. Wide angle shot, zoomed out. The ENTIRE head, face, and body MUST be completely visible perfectly inside the frame. The baby MUST be wearing ${outfitDescription} with ${chestDescription}. The baby has ${armsDescription} and ${legsDescription}. Bareheaded, strictly NO hats or hair accessories. The lighting is ${lightingDescription}. The background is a seamless, simple, neutral color filling the entire frame naturally without any borders, frames, or margins. High resolution, highly detailed, realistic.`;
 
@@ -87,8 +89,11 @@ export default async function handler(req, res) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          instances: [{ prompt: babyPrompt }],
-          parameters: { sampleCount: 1, aspectRatio: "1:1" }
+          contents: [{ parts: [{ text: babyPrompt }] }],
+          generationConfig: {
+            responseModalities: ["TEXT", "IMAGE"],
+            imageConfig: { aspectRatio: "1:1" }
+          }
         })
       });
 
@@ -98,7 +103,12 @@ export default async function handler(req, res) {
       }
 
       const imagenData = await imagenResponse.json();
-      const generatedBabyImage = `data:image/jpeg;base64,${imagenData.predictions[0].bytesBase64Encoded}`;
+      const imagePart = imagenData?.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
+      if (!imagePart) {
+        throw new Error(`Google AIエラー (画像データが返されませんでした): ${JSON.stringify(imagenData)}`);
+      }
+      const generatedMimeType = imagePart.inlineData.mimeType || 'image/png';
+      const generatedBabyImage = `data:${generatedMimeType};base64,${imagePart.inlineData.data}`;
       console.log("Baby image generated successfully.");
 
       console.log("Starting Fashn.ai job...");
