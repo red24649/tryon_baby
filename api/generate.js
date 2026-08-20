@@ -101,8 +101,9 @@ export default async function handler(req, res) {
       } else if (pose === 'standing') {
         postureDescription = "standing up, holding onto a small soft white baby sofa or padded prop for support, looking at the camera. Shot at the baby's eye level, horizontal camera angle, perfectly straight-on view, strictly NOT looking down from above";
       } else if (pose === 'lying') {
-        // ねんね：仰向けに寝転がったベビーを真上から撮影する俯瞰（フラットレイ）構図
-        postureDescription = "lying down on its back, relaxed and happy, looking straight up towards the camera, arms and legs resting naturally";
+        // ねんね：仰向けで手足を軽く持ち上げた活発な姿を、真上から撮影する俯瞰（フラットレイ）構図。
+        // 左右対称の硬い姿勢を避けるため、頭の傾き・重心の偏り・手足の非対称な動きを明示する。
+        postureDescription = "lying on its back in a lively, happy, candid moment, arms and legs gently lifted up off the surface in a playful active way (not flat on the sheet). The head is gently tilted to one side (not perfectly straight), the body weight shifted slightly to one side rather than perfectly centered. The two arms are raised in clearly different, asymmetric positions (for example one arm reaching up higher than the other), and the two legs are also lifted in different, asymmetric positions (knees softly bent at different angles, feet not aligned). Soft, natural, wiggling limbs, absolutely NOT a stiff, mirror-symmetric, or specimen-like pose";
         sceneDescription = "The baby is lying on a soft, smooth, clean white bed sheet or blanket. Flat lay photo shot directly from straight above (top-down overhead bird's-eye view), camera pointing straight down at the baby, the whole body laid out flat in the frame. Wide angle shot, zoomed out.";
       }
 
