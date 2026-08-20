@@ -139,7 +139,10 @@ export default async function handler(req, res) {
         },
         body: JSON.stringify({
           model_name: selectedModel,
-          inputs: fashnInputs
+          inputs: fashnInputs,
+          // セキュリティ強化：公開CDN URLではなくBase64で直接返却させ、
+          // サーバー側の画像保持期間を短縮し、リクエスト履歴にも画像を残さない
+          return_base64: true
         })
       });
 
