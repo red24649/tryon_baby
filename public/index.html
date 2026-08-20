@@ -340,7 +340,9 @@
               updateProgress(progressEnd, stepLabel, "完成しました");
               resolve(data.output[0]);
             } else if (data.status === 'failed') {
-              reject(new Error(data.error?.message || 'AI側で合成に失敗しました。別の画像でお試しください。'));
+              console.error(`[${stepLabel}] failed job payload:`, data);
+              const rawMsg = data.error?.message || data.error?.name || JSON.stringify(data.error) || '不明なエラー';
+              reject(new Error(`[${stepLabel}] ${rawMsg}`));
             } else {
               const current = parseInt(progressBar.style.width) || progressStart;
               const next = Math.min(current + Math.max(2, Math.round((progressEnd - progressStart) / 6)), progressEnd - 2);
@@ -465,10 +467,11 @@
 
         if (!startRes.ok) {
           const errText = await startRes.text();
+          console.error(`[${first.label}] start request failed:`, errText);
           if (startRes.status === 413 || errText.includes('Request Entity Too Large')) {
-            throw new Error('画像のデータサイズが大きすぎます。別の画像でお試しください。');
+            throw new Error(`[${first.label}] 画像のデータサイズが大きすぎます。別の画像でお試しください。`);
           }
-          throw new Error(`通信エラーが発生しました: ${errText}`);
+          throw new Error(`[${first.label}] 通信エラーが発生しました: ${errText}`);
         }
 
         const startData = await startRes.json();
@@ -500,7 +503,8 @@
 
           if (!nextRes.ok) {
             const errText = await nextRes.text();
-            throw new Error(`通信エラーが発生しました: ${errText}`);
+            console.error(`[${item.label}] nextTryon request failed:`, errText);
+            throw new Error(`[${item.label}] 通信エラーが発生しました: ${errText}`);
           }
 
           const nextData = await nextRes.json();
