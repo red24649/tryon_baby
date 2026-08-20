@@ -9,6 +9,50 @@ export const config = {
   },
 };
 
+// FASHN.aiのtry-onジョブを開始する共通関数
+// modelImageBase64: ベースになるモデル画像（ベビー生成画像 or 前段の合成結果）
+// garmentImageBase64: 重ねて着せたいアイテム画像
+async function startFashnJob(fashnApiKey, modelImageBase64, garmentImageBase64) {
+  // =================================================================
+  // ★ ここでFashn.aiのモデル（クレジット消費）を切り替えられます
+  // =================================================================
+  // "tryon-max" : 最高精度モデル（1回 2クレジット）※推奨
+  // "tryon-v1.6": 標準モデル（1回 1クレジット）
+  const selectedModel = "tryon-max";
+
+  const fashnInputs = {
+    model_image: modelImageBase64
+  };
+
+  if (selectedModel === "tryon-max") {
+    fashnInputs.product_image = garmentImageBase64; // maxモデル用の名前
+  } else {
+    fashnInputs.garment_image = garmentImageBase64; // v1.6モデル用の名前
+  }
+
+  const fashnResponse = await fetch('https://api.fashn.ai/v1/run', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${fashnApiKey}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      model_name: selectedModel,
+      inputs: fashnInputs,
+      // セキュリティ強化：公開CDN URLではなくBase64で直接返却させ、
+      // サーバー側の画像保持期間を短縮し、リクエスト履歴にも画像を残さない
+      return_base64: true
+    })
+  });
+
+  if (!fashnResponse.ok) {
+    const errorDetail = await fashnResponse.text();
+    throw new Error(`Fashn APIエラー (着画生成開始失敗): ${errorDetail}`);
+  }
+  const fashnData = await fashnResponse.json();
+  return fashnData.id;
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method Not Allowed' });
@@ -25,6 +69,10 @@ export default async function handler(req, res) {
 
   try {
     if (action === 'start') {
+      // コーディネートの「1点目（土台）」を着せる工程。
+      // itemType === 'clothes' の場合のみ、実際の丈感に合わせたベビー画像を生成する。
+      // 'bib'（雑貨）や 'hat'（帽子）が1点目の場合は、従来通りプレーンな肌着姿で生成し、
+      // FASHN側でそのアイテムを重ねて着せる。
       const { garmentImageBase64, gender, race, sleeveLength, pantsLength, itemType, pose } = req.body;
 
       let raceDescription = race;
@@ -50,7 +98,10 @@ export default async function handler(req, res) {
         postureDescription = "standing up, holding onto a small soft white baby sofa or padded prop for support, looking at the camera. Shot at the baby's eye level, horizontal camera angle, perfectly straight-on view, strictly NOT looking down from above";
       }
 
-      if (itemType === 'bib') {
+      // itemType が 'clothes' 以外（'bib'＝雑貨 or 'hat'＝帽子）の場合は、
+      // 従来の「雑貨のみ」時と同じプレーン肌着ベースを使う。
+      // ウェアが別途あるコーディネートでは、ウェアが必ず1点目になるためこの分岐には入らない。
+      if (itemType !== 'clothes') {
         outfitDescription = "a simple, perfectly plain white short-sleeve bodysuit";
         chestDescription = "a perfectly smooth, flat white fabric over the chest without any wrinkles";
         postureDescription = "sitting happily on the floor, perfectly facing forward, upright posture";
@@ -82,7 +133,7 @@ export default async function handler(req, res) {
       // Imagen4系(imagen-4.0-generate-001)は2026年8月17日付けでシャットダウン済みのため、
       // Gemini画像生成モデル(Nano Banana系)の generateContent エンドポイントに切り替え
       const imagenUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image:generateContent?key=${geminiApiKey}`;
-      
+
       const babyPrompt = `A professional studio photograph of a cute ${raceDescription} ${gender} baby, about 6-12 months old, ${postureDescription}. The baby is on a soft, plush, textured cream-colored rug or blanket. Wide angle shot, zoomed out. The ENTIRE head, face, and body MUST be completely visible perfectly inside the frame. The baby MUST be wearing ${outfitDescription} with ${chestDescription}. The baby has ${armsDescription} and ${legsDescription}. Bareheaded, strictly NO hats or hair accessories. The lighting is ${lightingDescription}. The background is a seamless, simple, neutral color filling the entire frame naturally without any borders, frames, or margins. High resolution, highly detailed, realistic.`;
 
       const imagenResponse = await fetch(imagenUrl, {
@@ -111,50 +162,26 @@ export default async function handler(req, res) {
       const generatedBabyImage = `data:${generatedMimeType};base64,${imagePart.inlineData.data}`;
       console.log("Baby image generated successfully.");
 
-      console.log("Starting Fashn.ai job...");
+      console.log("Starting Fashn.ai job (item 1)...");
+      const jobId = await startFashnJob(fashnApiKey, generatedBabyImage, garmentImageBase64);
 
-      // =================================================================
-      // ★ ここでFashn.aiのモデル（クレジット消費）を切り替えられます
-      // =================================================================
-      // "tryon-max" : 最高精度モデル（1回 2クレジット）※推奨
-      // "tryon-v1.6": 標準モデル（1回 1クレジット）
-      const selectedModel = "tryon-max"; 
-
-      // Fashn.aiに送る画像データ（モデルによって名前のルールが違うため自動切替）
-      const fashnInputs = {
-        model_image: generatedBabyImage
-      };
-      
-      if (selectedModel === "tryon-max") {
-        fashnInputs.product_image = garmentImageBase64; // maxモデル用の名前
-      } else {
-        fashnInputs.garment_image = garmentImageBase64; // v1.6モデル用の名前
-      }
-
-      const fashnResponse = await fetch('https://api.fashn.ai/v1/run', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${fashnApiKey}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          model_name: selectedModel,
-          inputs: fashnInputs,
-          // セキュリティ強化：公開CDN URLではなくBase64で直接返却させ、
-          // サーバー側の画像保持期間を短縮し、リクエスト履歴にも画像を残さない
-          return_base64: true
-        })
-      });
-
-      if (!fashnResponse.ok) {
-        const errorDetail = await fashnResponse.text();
-        throw new Error(`Fashn APIエラー (着画生成開始失敗): ${errorDetail}`);
-      }
-      const fashnData = await fashnResponse.json();
-      
-      return res.status(200).json({ jobId: fashnData.id });
+      return res.status(200).json({ jobId });
     }
-    
+
+    else if (action === 'nextTryon') {
+      // コーディネートの2点目以降（雑貨・帽子など）を、直前の合成結果の上に重ねて着せる工程。
+      const { modelImageBase64, garmentImageBase64 } = req.body;
+
+      if (!modelImageBase64 || !garmentImageBase64) {
+        return res.status(400).json({ error: 'modelImageBase64 と garmentImageBase64 が必要です。' });
+      }
+
+      console.log("Starting Fashn.ai job (next item)...");
+      const jobId = await startFashnJob(fashnApiKey, modelImageBase64, garmentImageBase64);
+
+      return res.status(200).json({ jobId });
+    }
+
     else if (action === 'status') {
       const { jobId } = req.body;
       const response = await fetch(`https://api.fashn.ai/v1/status/${jobId}`, {
@@ -169,11 +196,11 @@ export default async function handler(req, res) {
       const data = await response.json();
       return res.status(200).json(data);
     }
-    
+
     else if (action === 'delete') {
       const { jobId } = req.body;
       console.log(`Deleting job from Fashn.ai: ${jobId}`);
-      
+
       const response = await fetch(`https://api.fashn.ai/v1/job/${jobId}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${fashnApiKey}` }
