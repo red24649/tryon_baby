@@ -22,43 +22,53 @@
   <div class="bg-white p-6 sm:p-8 rounded-3xl shadow-xl w-full max-w-lg my-8">
     <div class="text-center mb-8">
       <h1 class="text-2xl font-extrabold text-indigo-900 mb-2">&#x1f476; ベビー着画メーカー</h1>
-      <p class="text-sm text-gray-500">置き画からベビー着画を生成します(プロトタイプ版)</p>
+      <p class="text-sm text-gray-500">置き画からベビーコーデ画像を生成します(プロトタイプ版)</p>
     </div>
 
-    <!-- 1. 服の画像アップロード -->
+    <!-- 1. コーディネートのアイテム登録 -->
     <div class="mb-8">
-      <label class="block text-sm font-bold text-gray-800 mb-2">&#x2460; 着せたいアイテムの画像をアップロード</label>
-      <div id="dropZone" class="border-2 border-dashed border-indigo-300 rounded-2xl p-8 text-center hover:bg-indigo-50 transition cursor-pointer flex flex-col items-center justify-center bg-gray-50 group">
-        <div class="bg-white p-3 rounded-full shadow-sm mb-4 group-hover:scale-110 transition">
-          <svg class="w-8 h-8 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+      <label class="block text-sm font-bold text-gray-800 mb-2">&#x2460; コーディネートのアイテムを登録</label>
+      <p class="text-xs text-gray-500 mb-4">1点以上を登録してください。登録した順に「ウェア→雑貨→帽子」の順で重ねて合成します。</p>
+
+      <div class="space-y-4">
+        <!-- ウェア -->
+        <div class="border-2 border-gray-100 rounded-2xl p-4">
+          <p class="text-xs font-bold text-gray-700 mb-2">&#x1F455; ウェア（任意）</p>
+          <div id="slotWear" class="upload-slot border-2 border-dashed border-indigo-300 rounded-xl p-4 text-center hover:bg-indigo-50 transition cursor-pointer flex items-center justify-center gap-3 bg-gray-50">
+            <img id="previewWear" class="hidden h-16 w-16 rounded-lg object-contain border border-gray-200 bg-white" alt="ウェアのプレビュー">
+            <span id="labelWear" class="text-sm text-gray-500">クリックして画像を選択</span>
+            <input type="file" id="inputWear" accept="image/*" class="hidden" />
+            <button type="button" id="clearWear" class="hidden ml-auto text-xs text-red-500 font-bold px-2 py-1">削除</button>
+          </div>
         </div>
-        <p class="text-sm text-gray-600 font-medium">クリックして画像を選択</p>
-        <p class="text-xs text-gray-400 mt-1">またはドラッグ＆ドロップ</p>
-        <input type="file" id="imageInput" accept="image/*" class="hidden" />
-      </div>
-      <div class="mt-4 flex justify-center">
-        <img id="previewGarment" class="hidden h-40 rounded-xl object-contain border-2 border-gray-100 shadow-sm" alt="アイテムのプレビュー">
+
+        <!-- 雑貨 -->
+        <div class="border-2 border-gray-100 rounded-2xl p-4">
+          <p class="text-xs font-bold text-gray-700 mb-2">&#x1f3a9; 雑貨（スタイなど・任意）</p>
+          <div id="slotZakka" class="upload-slot border-2 border-dashed border-indigo-300 rounded-xl p-4 text-center hover:bg-indigo-50 transition cursor-pointer flex items-center justify-center gap-3 bg-gray-50">
+            <img id="previewZakka" class="hidden h-16 w-16 rounded-lg object-contain border border-gray-200 bg-white" alt="雑貨のプレビュー">
+            <span id="labelZakka" class="text-sm text-gray-500">クリックして画像を選択</span>
+            <input type="file" id="inputZakka" accept="image/*" class="hidden" />
+            <button type="button" id="clearZakka" class="hidden ml-auto text-xs text-red-500 font-bold px-2 py-1">削除</button>
+          </div>
+        </div>
+
+        <!-- 帽子（新規） -->
+        <div class="border-2 border-gray-100 rounded-2xl p-4">
+          <p class="text-xs font-bold text-gray-700 mb-2">&#x1F3A9;&#x2757; ベビー帽子（任意・NEW）</p>
+          <div id="slotHat" class="upload-slot border-2 border-dashed border-indigo-300 rounded-xl p-4 text-center hover:bg-indigo-50 transition cursor-pointer flex items-center justify-center gap-3 bg-gray-50">
+            <img id="previewHat" class="hidden h-16 w-16 rounded-lg object-contain border border-gray-200 bg-white" alt="帽子のプレビュー">
+            <span id="labelHat" class="text-sm text-gray-500">クリックして画像を選択</span>
+            <input type="file" id="inputHat" accept="image/*" class="hidden" />
+            <button type="button" id="clearHat" class="hidden ml-auto text-xs text-red-500 font-bold px-2 py-1">削除</button>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- アイテムの種類 -->
-    <div class="mb-6">
-      <label class="block text-sm font-bold text-gray-800 mb-3">&#x2461; アイテムの種類</label>
-      <div class="flex gap-3 radio-group">
-        <div class="flex-1">
-          <input type="radio" name="itemType" value="clothes" id="typeClothes" class="sr-only" checked>
-          <label for="typeClothes" class="block w-full">&#x1F455; ウェア</label>
-        </div>
-        <div class="flex-1">
-          <input type="radio" name="itemType" value="bib" id="typeBib" class="sr-only">
-          <label for="typeBib" class="block w-full">&#x1f3a9; 雑貨（スタイなど）</label>
-        </div>
-      </div>
-    </div>
-
-    <!-- 服の詳細指定 -->
-    <div id="clothesDetailSection" class="mb-8">
-      <label class="block text-sm font-bold text-gray-800 mb-3">&#x2462; 丈感</label>
+    <!-- 服の詳細指定（ウェア登録時のみ有効） -->
+    <div id="clothesDetailSection" class="mb-8 disabled-section">
+      <label class="block text-sm font-bold text-gray-800 mb-3">&#x2461; 丈感（ウェア登録時のみ）</label>
       <div class="grid grid-cols-2 gap-4">
         <div>
           <label class="block text-xs text-gray-600 mb-1">袖の長さ</label>
@@ -83,8 +93,8 @@
 
     <!-- 赤ちゃんの特徴選択 -->
     <div class="mb-8">
-      <label class="block text-sm font-bold text-gray-800 mb-3">&#x2463; ベビーモデル選択</label>
-      
+      <label class="block text-sm font-bold text-gray-800 mb-3">&#x2462; ベビーモデル選択</label>
+
       <div class="mb-4">
         <p class="text-xs text-gray-600 font-bold mb-2 ml-1">性別</p>
         <div class="flex gap-3 radio-group">
@@ -117,8 +127,8 @@
         </div>
       </div>
 
-      <!-- 追加: ポーズ選択 -->
-      <div id="poseDetailSection">
+      <!-- ポーズ選択（ウェア登録時のみ有効） -->
+      <div id="poseDetailSection" class="disabled-section">
         <p class="text-xs text-gray-600 font-bold mb-2 ml-1">ポーズ</p>
         <div class="grid grid-cols-3 gap-3 radio-group">
           <div>
@@ -138,7 +148,7 @@
     </div>
 
     <button id="generateBtn" disabled class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold py-4 px-4 rounded-2xl hover:from-indigo-700 hover:to-purple-700 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
-      &#x2728; モデルと着画を生成する
+      &#x2728; モデルとコーデ画像を生成する
     </button>
 
     <!-- ローディング表示 -->
@@ -149,7 +159,7 @@
       </div>
       <p id="loadingStatus" class="text-indigo-800 font-bold text-lg animate-pulse">AIが準備しています...</p>
       <p id="loadingSubStatus" class="text-sm text-indigo-600 mt-2">しばらくお待ちください</p>
-      
+
       <!-- 進捗バー -->
       <div class="w-full bg-gray-200 rounded-full h-3 mt-6 overflow-hidden relative">
         <div id="progressBar" class="bg-gradient-to-r from-indigo-500 to-purple-500 h-3 rounded-full w-0 transition-all duration-700 ease-out"></div>
@@ -167,11 +177,11 @@
       <h2 class="text-xl font-extrabold text-gray-800 mb-6 flex items-center justify-center gap-2">
         <span class="text-2xl">&#x1F389;</span> 完成しました！
       </h2>
-      
+
       <div class="bg-white p-2 rounded-3xl shadow-lg border-2 border-indigo-50 inline-block">
         <img id="resultImage" class="w-full max-w-md rounded-2xl" alt="生成された画像">
       </div>
-      
+
       <button id="downloadBtn" class="mt-6 w-full sm:w-auto bg-green-500 text-white font-bold py-3 px-8 rounded-xl hover:bg-green-600 transition shadow-md flex items-center justify-center gap-2 mx-auto disabled:opacity-50 disabled:cursor-not-allowed">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
         <span>画像を保存する</span>
@@ -180,16 +190,13 @@
   </div>
 
   <script>
-    const imageInput = document.getElementById('imageInput');
-    const dropZone = document.getElementById('dropZone');
-    const previewGarment = document.getElementById('previewGarment');
     const generateBtn = document.getElementById('generateBtn');
-    
+
     const loading = document.getElementById('loading');
     const loadingStatus = document.getElementById('loadingStatus');
     const loadingSubStatus = document.getElementById('loadingSubStatus');
     const progressBar = document.getElementById('progressBar');
-    
+
     const resultContainer = document.getElementById('resultContainer');
     const resultImage = document.getElementById('resultImage');
     const errorBox = document.getElementById('errorBox');
@@ -201,51 +208,85 @@
     const clothesDetailSection = document.getElementById('clothesDetailSection');
     const poseDetailSection = document.getElementById('poseDetailSection');
 
-    let currentDataUri = null;
-
-    const radioButtons = document.querySelectorAll('input[name="itemType"]');
-    radioButtons.forEach(radio => {
-      radio.addEventListener('change', (e) => {
-        if (e.target.value === 'bib') {
-          clothesDetailSection.classList.add('disabled-section');
-          poseDetailSection.classList.add('disabled-section');
-        } else {
-          clothesDetailSection.classList.remove('disabled-section');
-          poseDetailSection.classList.remove('disabled-section');
-        }
-      });
-    });
-
-    const handleFile = (file) => {
-      if (!file || !file.type.startsWith('image/')) {
-        showError("画像ファイルを選択してください。");
-        return;
-      }
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        currentDataUri = event.target.result;
-        previewGarment.src = currentDataUri;
-        previewGarment.classList.remove('hidden');
-        generateBtn.disabled = false;
-        hideError();
-        resultContainer.classList.add('hidden');
-      };
-      reader.readAsDataURL(file);
+    // ---- アイテム3枠（ウェア／雑貨／帽子）の管理 ----
+    // type: 'clothes'（ウェア） / 'bib'（雑貨・帽子共通の「平置きアイテム」扱い）
+    const slots = {
+      wear:  { dataUri: null, type: 'clothes', input: document.getElementById('inputWear'),  zone: document.getElementById('slotWear'),  preview: document.getElementById('previewWear'),  label: document.getElementById('labelWear'),  clearBtn: document.getElementById('clearWear') },
+      zakka: { dataUri: null, type: 'bib',      input: document.getElementById('inputZakka'), zone: document.getElementById('slotZakka'), preview: document.getElementById('previewZakka'), label: document.getElementById('labelZakka'), clearBtn: document.getElementById('clearZakka') },
+      hat:   { dataUri: null, type: 'hat',      input: document.getElementById('inputHat'),   zone: document.getElementById('slotHat'),   preview: document.getElementById('previewHat'),   label: document.getElementById('labelHat'),   clearBtn: document.getElementById('clearHat') }
     };
 
-    imageInput.addEventListener('change', (e) => handleFile(e.target.files[0]));
-    dropZone.addEventListener('click', () => imageInput.click());
-    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('border-indigo-500', 'bg-indigo-50'); });
-    dropZone.addEventListener('dragleave', (e) => { e.preventDefault(); dropZone.classList.remove('border-indigo-500', 'bg-indigo-50'); });
-    dropZone.addEventListener('drop', (e) => {
-      e.preventDefault();
-      dropZone.classList.remove('border-indigo-500', 'bg-indigo-50');
-      if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+    const updateWearDependentSections = () => {
+      const hasWear = !!slots.wear.dataUri;
+      clothesDetailSection.classList.toggle('disabled-section', !hasWear);
+      poseDetailSection.classList.toggle('disabled-section', !hasWear);
+    };
+
+    const updateGenerateButtonState = () => {
+      const anyItem = slots.wear.dataUri || slots.zakka.dataUri || slots.hat.dataUri;
+      generateBtn.disabled = !anyItem;
+    };
+
+    const setSlotImage = (key, dataUri) => {
+      const s = slots[key];
+      s.dataUri = dataUri;
+      s.preview.src = dataUri;
+      s.preview.classList.remove('hidden');
+      s.label.classList.add('hidden');
+      s.clearBtn.classList.remove('hidden');
+      updateWearDependentSections();
+      updateGenerateButtonState();
+      hideError();
+      resultContainer.classList.add('hidden');
+    };
+
+    const clearSlotImage = (key) => {
+      const s = slots[key];
+      s.dataUri = null;
+      s.input.value = '';
+      s.preview.classList.add('hidden');
+      s.label.classList.remove('hidden');
+      s.clearBtn.classList.add('hidden');
+      updateWearDependentSections();
+      updateGenerateButtonState();
+    };
+
+    Object.keys(slots).forEach((key) => {
+      const s = slots[key];
+      s.zone.addEventListener('click', (e) => {
+        if (e.target === s.clearBtn) return;
+        s.input.click();
+      });
+      s.input.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file || !file.type.startsWith('image/')) {
+          showError('画像ファイルを選択してください。');
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = (event) => setSlotImage(key, event.target.result);
+        reader.readAsDataURL(file);
+      });
+      s.clearBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        clearSlotImage(key);
+      });
+      s.zone.addEventListener('dragover', (e) => { e.preventDefault(); s.zone.classList.add('border-indigo-500', 'bg-indigo-50'); });
+      s.zone.addEventListener('dragleave', (e) => { e.preventDefault(); s.zone.classList.remove('border-indigo-500', 'bg-indigo-50'); });
+      s.zone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        s.zone.classList.remove('border-indigo-500', 'bg-indigo-50');
+        const file = e.dataTransfer.files[0];
+        if (!file || !file.type.startsWith('image/')) return;
+        const reader = new FileReader();
+        reader.onload = (event) => setSlotImage(key, event.target.result);
+        reader.readAsDataURL(file);
+      });
     });
 
     downloadBtn.addEventListener('click', async () => {
       if (!resultImage.src) return;
-      
+
       const originalText = downloadBtn.innerHTML;
       downloadBtn.innerHTML = '<svg class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><span>保存の準備中...</span>';
       downloadBtn.disabled = true;
@@ -254,16 +295,16 @@
         const response = await fetch(resultImage.src);
         if (!response.ok) throw new Error("Network response was not ok");
         const blob = await response.blob();
-        
+
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        
+
         a.download = `tryon_baby_${new Date().getTime()}.jpg`;
-        
+
         document.body.appendChild(a);
         a.click();
-        
+
         document.body.removeChild(a);
         window.URL.revokeObjectURL(url);
       } catch (error) {
@@ -275,47 +316,43 @@
       }
     });
 
-    const checkStatus = async (jobId) => {
-      try {
-        const res = await fetch('/api/generate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'status', jobId })
-        });
-        const data = await res.json();
+    // jobId が完了するまでポーリングし、完成画像（base64 data URI）を返す。
+    // progressStart/progressEnd の範囲でプログレスバーを更新する。
+    const waitForJob = (jobId, progressStart, progressEnd, stepLabel) => {
+      return new Promise((resolve, reject) => {
+        const poll = async () => {
+          try {
+            const res = await fetch('/api/generate', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ action: 'status', jobId })
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'ステータス確認に失敗しました');
 
-        if (!res.ok) throw new Error(data.error || 'ステータス確認に失敗しました');
+            if (data.status === 'completed') {
+              fetch('/api/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'delete', jobId })
+              }).catch(e => console.error("削除リクエストエラー", e));
 
-        if (data.status === 'completed') {
-          resultImage.src = data.output[0];
-          
-          fetch('/api/generate', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'delete', jobId: jobId })
-          }).catch(e => console.error("削除リクエストエラー", e));
-
-          updateProgress(100, "完成しました！", "表示の準備をしています...");
-          setTimeout(() => {
-            loading.classList.add('hidden');
-            resultContainer.classList.remove('hidden');
-            generateBtn.disabled = false;
-            resultContainer.scrollIntoView({ behavior: 'smooth' });
-          }, 1000);
-          
-        } else if (data.status === 'failed') {
-          throw new Error(data.error?.message || 'AI側で合成に失敗しました。別の画像でお試しください。');
-        } else {
-          updateProgress(
-            Math.min(parseInt(progressBar.style.width) + 15, 90),
-            "がんばって合成しています...",
-            "高精度な処理のため、もう少しかかります"
-          );
-          setTimeout(() => checkStatus(jobId), 4000);
-        }
-      } catch (err) {
-        showError(err.message);
-      }
+              updateProgress(progressEnd, stepLabel, "完成しました");
+              resolve(data.output[0]);
+            } else if (data.status === 'failed') {
+              reject(new Error(data.error?.message || 'AI側で合成に失敗しました。別の画像でお試しください。'));
+            } else {
+              const current = parseInt(progressBar.style.width) || progressStart;
+              const next = Math.min(current + Math.max(2, Math.round((progressEnd - progressStart) / 6)), progressEnd - 2);
+              updateProgress(next, stepLabel, "高精度な処理のため、もう少しかかります");
+              setTimeout(poll, 4000);
+            }
+          } catch (err) {
+            reject(err);
+          }
+        };
+        setTimeout(poll, 4000);
+      });
     };
 
     const showError = (msg) => {
@@ -334,6 +371,8 @@
       if (subStatus) loadingSubStatus.textContent = subStatus;
     }
 
+    // isBib=true の場合、白背景を足してアイテムを上部に配置するパディング処理。
+    // ウェア（体に沿った着画）はそのまま、雑貨・帽子など平置きアイテムはこちらを使う。
     const processImage = (dataUri, isBib) => {
       return new Promise((resolve) => {
         const img = new Image();
@@ -356,18 +395,18 @@
             ctx.drawImage(img, 0, 0, w, h);
             resolve(canvas.toDataURL('image/jpeg', 0.85));
           } else {
-            const paddingRatio = 2.0; 
+            const paddingRatio = 2.0;
             canvas.width = w * paddingRatio;
             canvas.height = h * paddingRatio;
             const ctx = canvas.getContext('2d');
-            
+
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
+
             const x = (canvas.width - w) / 2;
-            const y = canvas.height * 0.25; 
+            const y = canvas.height * 0.25;
             ctx.drawImage(img, x, y, w, h);
-            
+
             resolve(canvas.toDataURL('image/jpeg', 0.85));
           }
         };
@@ -376,56 +415,106 @@
     };
 
     generateBtn.addEventListener('click', async () => {
-      if (!currentDataUri) return;
-      
+      // 登録順（ウェア→雑貨→帽子）でコーディネートのアイテム一覧を組み立てる。
+      const items = [];
+      if (slots.wear.dataUri) items.push({ dataUri: slots.wear.dataUri, type: 'clothes', label: 'ウェア' });
+      if (slots.zakka.dataUri) items.push({ dataUri: slots.zakka.dataUri, type: 'bib', label: '雑貨' });
+      if (slots.hat.dataUri) items.push({ dataUri: slots.hat.dataUri, type: 'hat', label: '帽子' });
+
+      if (items.length === 0) {
+        showError('ウェア・雑貨・帽子のいずれか1点以上を登録してください。');
+        return;
+      }
+
       const gender = document.querySelector('input[name="gender"]:checked').value;
       const race = document.querySelector('input[name="race"]:checked').value;
-      const sLen = sleeveLength.value;
-      const pLen = pantsLength.value;
-      const itemType = document.querySelector('input[name="itemType"]:checked').value;
-      const pose = document.querySelector('input[name="pose"]:checked').value; // 追加: ポーズ取得
+      const sLen = slots.wear.dataUri ? sleeveLength.value : '';
+      const pLen = slots.wear.dataUri ? pantsLength.value : '';
+      const pose = document.querySelector('input[name="pose"]:checked').value;
 
       generateBtn.disabled = true;
       loading.classList.remove('hidden');
       resultContainer.classList.add('hidden');
       hideError();
-      
-      updateProgress(10, "画像を最適化中...", "アイテムの種類に合わせて調整しています");
+      updateProgress(0, "画像を最適化中...", "アイテムの種類に合わせて調整しています");
 
       try {
-        const processedImageBase64 = await processImage(currentDataUri, itemType === 'bib');
+        const totalSteps = items.length;
+        const stepSpan = 100 / (totalSteps + 0.5); // 最初のベビー生成分を少し多めに確保
 
-        updateProgress(20, "AIにリクエストを送信中...", "ベビーちゃんのモデル画像を生成しています");
+        // --- 1点目：ベビーモデル生成 + 1点目の着せ込み ---
+        const first = items[0];
+        const firstProcessed = await processImage(first.dataUri, first.type !== 'clothes');
 
-        const res = await fetch('/api/generate', {
+        updateProgress(5, "AIにリクエストを送信中...", "ベビーちゃんのモデル画像を生成しています");
+
+        const startRes = await fetch('/api/generate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             action: 'start',
-            garmentImageBase64: processedImageBase64,
-            gender: gender,
-            race: race,
+            garmentImageBase64: firstProcessed,
+            gender,
+            race,
             sleeveLength: sLen,
             pantsLength: pLen,
-            itemType: itemType,
-            pose: pose // 追加: ポーズをAPIに送信
+            itemType: first.type,
+            pose
           })
         });
-        
-        if (!res.ok) {
-          const errText = await res.text();
-          if (res.status === 413 || errText.includes('Request Entity Too Large')) {
+
+        if (!startRes.ok) {
+          const errText = await startRes.text();
+          if (startRes.status === 413 || errText.includes('Request Entity Too Large')) {
             throw new Error('画像のデータサイズが大きすぎます。別の画像でお試しください。');
           }
           throw new Error(`通信エラーが発生しました: ${errText}`);
         }
-        
-        const data = await res.json();
 
-        const jobId = data.jobId;
-        updateProgress(50, "モデルの生成が完了しました", "次に、Fashn.aiでアイテムの合成を開始します...");
+        const startData = await startRes.json();
+        let currentImage = await waitForJob(
+          startData.jobId,
+          10,
+          Math.round(stepSpan * 1.5),
+          `${first.label}を合成中...`
+        );
 
-        setTimeout(() => checkStatus(jobId), 4000);
+        // --- 2点目以降：直前の合成結果に重ねて着せる ---
+        for (let i = 1; i < items.length; i++) {
+          const item = items[i];
+          const processed = await processImage(item.dataUri, true); // 雑貨・帽子は平置き扱い
+
+          const progressStart = Math.round(stepSpan * (1.5 + (i - 1)));
+          const progressEnd = Math.round(stepSpan * (1.5 + i));
+          updateProgress(progressStart, `${item.label}を重ねています...`, "合成をリクエストしています");
+
+          const nextRes = await fetch('/api/generate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'nextTryon',
+              modelImageBase64: currentImage,
+              garmentImageBase64: processed
+            })
+          });
+
+          if (!nextRes.ok) {
+            const errText = await nextRes.text();
+            throw new Error(`通信エラーが発生しました: ${errText}`);
+          }
+
+          const nextData = await nextRes.json();
+          currentImage = await waitForJob(nextData.jobId, progressStart, progressEnd, `${item.label}を合成中...`);
+        }
+
+        resultImage.src = currentImage;
+        updateProgress(100, "完成しました！", "表示の準備をしています...");
+        setTimeout(() => {
+          loading.classList.add('hidden');
+          resultContainer.classList.remove('hidden');
+          generateBtn.disabled = false;
+          resultContainer.scrollIntoView({ behavior: 'smooth' });
+        }, 800);
 
       } catch (err) {
         showError(err.message);
