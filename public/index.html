@@ -128,9 +128,9 @@
       </div>
 
       <!-- ポーズ選択（ウェア登録時のみ有効） -->
-      <div id="poseDetailSection" class="disabled-section">
+      <div id="poseDetailSection">
         <p class="text-xs text-gray-600 font-bold mb-2 ml-1">ポーズ</p>
-        <div class="grid grid-cols-3 gap-3 radio-group">
+        <div class="grid grid-cols-2 gap-3 radio-group">
           <div>
             <input type="radio" name="pose" value="sitting_front" id="poseFront" class="sr-only" checked>
             <label for="poseFront" class="block w-full px-2">おすわり<br><span class="text-xs font-normal">(正面)</span></label>
@@ -142,6 +142,10 @@
           <div>
             <input type="radio" name="pose" value="standing" id="poseStand" class="sr-only">
             <label for="poseStand" class="block w-full px-2">つかまり<br><span class="text-xs font-normal">立ち</span></label>
+          </div>
+          <div>
+            <input type="radio" name="pose" value="lying" id="poseLying" class="sr-only">
+            <label for="poseLying" class="block w-full px-2">ねんね<br><span class="text-xs font-normal">(真上から)</span></label>
           </div>
         </div>
       </div>
@@ -218,8 +222,10 @@
 
     const updateWearDependentSections = () => {
       const hasWear = !!slots.wear.dataUri;
+      // 丈感（袖・パンツ）はウェア専用のためウェア登録時のみ有効
       clothesDetailSection.classList.toggle('disabled-section', !hasWear);
-      poseDetailSection.classList.toggle('disabled-section', !hasWear);
+      // ポーズ（ねんね含む）はウェアの有無に関わらず常に選択可能
+      poseDetailSection.classList.remove('disabled-section');
     };
 
     const updateGenerateButtonState = () => {
