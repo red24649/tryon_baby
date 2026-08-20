@@ -99,7 +99,9 @@ export default async function handler(req, res) {
       if (pose === 'sitting_side') {
         postureDescription = "sitting happily on the floor, in a relaxed and natural posture, with the body angled slightly diagonally to the camera (3/4 profile view)";
       } else if (pose === 'standing') {
-        postureDescription = "standing up, holding onto a small soft white baby sofa or padded prop for support, looking at the camera. Shot at the baby's eye level, horizontal camera angle, perfectly straight-on view, strictly NOT looking down from above";
+        postureDescription = "standing up, holding onto a soft, plush mound of rolled-up cream-colored rug or thick folded blanket for support (a natural soft cushiony pile, NOT a hard sofa, NOT a stiff prop, NOT a pillow), looking at the camera. Shot at the baby's eye level, horizontal camera angle, perfectly straight-on view, strictly NOT looking down from above";
+        // つかまり立ちの足元にも、他ポーズと同じ柔らかいラグを敷き、床が硬く見えないようにする
+        sceneDescription = "The baby is standing on a soft, thick, plush cream-colored rug or fluffy blanket that spreads out and fills the floor of the frame, so the ground looks soft and cozy, not a hard floor. Wide angle shot, zoomed out.";
       } else if (pose === 'lying') {
         // ねんね：仰向けで手足を下げた落ち着いた自然な姿を、真上から撮影する俯瞰（フラットレイ）構図。
         // 左右対称の硬さは避けつつ、手足を上げすぎて暴れた印象にならないよう「下げる・ほぼ伸ばす」を明示する。
