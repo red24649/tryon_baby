@@ -90,12 +90,20 @@ export default async function handler(req, res) {
       let chestDescription = "";
       let postureDescription = "sitting happily on the floor, perfectly facing forward, upright posture";
       let lightingDescription = "soft and natural lighting";
+      // シーン（寝具・カメラアングル・全体構図）の記述。ポーズによって切り替える。
+      // 通常（おすわり・つかまり立ち）は床＋クリーム色のラグを俯瞰しない構図、
+      // 'lying'（ねんね）のときだけ、真上からの俯瞰＋白いシーツに切り替える。
+      let sceneDescription = "The baby is on a soft, plush, textured cream-colored rug or blanket. Wide angle shot, zoomed out.";
 
       // 改善：つかまり立ちのカメラアングルを水平（アイレベル）に指定
       if (pose === 'sitting_side') {
         postureDescription = "sitting happily on the floor, in a relaxed and natural posture, with the body angled slightly diagonally to the camera (3/4 profile view)";
       } else if (pose === 'standing') {
         postureDescription = "standing up, holding onto a small soft white baby sofa or padded prop for support, looking at the camera. Shot at the baby's eye level, horizontal camera angle, perfectly straight-on view, strictly NOT looking down from above";
+      } else if (pose === 'lying') {
+        // ねんね：仰向けに寝転がったベビーを真上から撮影する俯瞰（フラットレイ）構図
+        postureDescription = "lying down on its back, relaxed and happy, looking straight up towards the camera, arms and legs resting naturally";
+        sceneDescription = "The baby is lying on a soft, smooth, clean white bed sheet or blanket. Flat lay photo shot directly from straight above (top-down overhead bird's-eye view), camera pointing straight down at the baby, the whole body laid out flat in the frame. Wide angle shot, zoomed out.";
       }
 
       // itemType が 'clothes' 以外（'bib'＝雑貨 or 'hat'＝帽子）の場合は、
@@ -104,7 +112,10 @@ export default async function handler(req, res) {
       if (itemType !== 'clothes') {
         outfitDescription = "a simple, perfectly plain white short-sleeve bodysuit";
         chestDescription = "a perfectly smooth, flat white fabric over the chest without any wrinkles";
-        postureDescription = "sitting happily on the floor, perfectly facing forward, upright posture";
+        // 雑貨・帽子のみの場合はおすわり正面が基本だが、ねんねが選ばれていればその構図を尊重する
+        if (pose !== 'lying') {
+          postureDescription = "sitting happily on the floor, perfectly facing forward, upright posture";
+        }
       } else {
         chestDescription = "natural fabric texture with soft, realistic folds, creases, and gentle wrinkles that give the clothing a realistic 3D volume";
         lightingDescription = "soft directional lighting highlighting the natural 3D shape and wrinkles of the fabric";
@@ -134,7 +145,7 @@ export default async function handler(req, res) {
       // Gemini画像生成モデル(Nano Banana系)の generateContent エンドポイントに切り替え
       const imagenUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image:generateContent?key=${geminiApiKey}`;
 
-      const babyPrompt = `A professional studio photograph of a cute ${raceDescription} ${gender} baby, about 6-12 months old, ${postureDescription}. The baby is on a soft, plush, textured cream-colored rug or blanket. Wide angle shot, zoomed out. The ENTIRE head, face, and body MUST be completely visible perfectly inside the frame. The baby MUST be wearing ${outfitDescription} with ${chestDescription}. The baby has ${armsDescription} and ${legsDescription}. Bareheaded, strictly NO hats or hair accessories. The lighting is ${lightingDescription}. The background is a seamless, simple, neutral color filling the entire frame naturally without any borders, frames, or margins. High resolution, highly detailed, realistic.`;
+      const babyPrompt = `A professional studio photograph of a cute ${raceDescription} ${gender} baby, about 6-12 months old, ${postureDescription}. ${sceneDescription} The ENTIRE head, face, and body MUST be completely visible perfectly inside the frame. The baby MUST be wearing ${outfitDescription} with ${chestDescription}. The baby has ${armsDescription} and ${legsDescription}. Bareheaded, strictly NO hats or hair accessories. The lighting is ${lightingDescription}. The background is a seamless, simple, neutral color filling the entire frame naturally without any borders, frames, or margins. High resolution, highly detailed, realistic.`;
 
       const imagenResponse = await fetch(imagenUrl, {
         method: 'POST',
