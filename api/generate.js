@@ -220,8 +220,14 @@ export default async function handler(req, res) {
         headers: { 'Authorization': `Bearer ${fashnApiKey}` }
       });
 
+      // 削除は生成完了後の「後片付け」。対象ジョブが既に無い場合（404）や
+      // 期限切れ（410）は、成果物（生成画像）には影響しないため正常扱いにする。
       if (!response.ok) {
         const errorDetail = await response.text();
+        if (response.status === 404 || response.status === 410) {
+          console.log(`Fashn API: ジョブは既に存在しません (${response.status})。後片付けをスキップします。`);
+          return res.status(200).json({ message: 'Already deleted or not found' });
+        }
         console.error(`Fashn API 削除エラー: ${errorDetail}`);
         return res.status(500).json({ error: '削除に失敗しました' });
       }
