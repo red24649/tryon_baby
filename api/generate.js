@@ -23,8 +23,8 @@ async function startFashnJob(fashnApiKey, modelImageBase64, garmentImageBase64) 
   const fashnInputs = {
     model_image: modelImageBase64,
     // FASHN APIでは出力形式・Base64返却の指定は inputs の中に入れる必要がある。
-    // output_format は保存ファイル拡張子(.jpg)に合わせて jpeg を指定。
-    output_format: "jpeg",
+    // 高画質・無劣化で出力するため PNG を指定（保存ファイル拡張子も .png に合わせる）。
+    output_format: "png",
     // 公開CDN URLではなくBase64のdata URIで直接返却させる。
     // → 別ドメインCDNへのfetchで起きるCORSエラーを回避でき、
     //   サーバー側の画像保持期間短縮・履歴に画像を残さない利点もある。
