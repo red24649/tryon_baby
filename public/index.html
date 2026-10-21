@@ -298,9 +298,28 @@
       downloadBtn.disabled = true;
 
       try {
-        const response = await fetch(resultImage.src);
-        if (!response.ok) throw new Error("Network response was not ok");
-        const blob = await response.blob();
+        const src = resultImage.src;
+        let blob;
+
+        if (src.startsWith('data:')) {
+          // 生成画像はbase64のdata URI（return_base64:true）。
+          // fetch経由だと大きなdata URIで失敗することがあるため、直接Blobに変換する。
+          const [header, base64Data] = src.split(',');
+          const mimeMatch = header.match(/data:([^;]+)/);
+          const mime = mimeMatch ? mimeMatch[1] : 'image/jpeg';
+          const binary = atob(base64Data);
+          const len = binary.length;
+          const bytes = new Uint8Array(len);
+          for (let i = 0; i < len; i++) {
+            bytes[i] = binary.charCodeAt(i);
+          }
+          blob = new Blob([bytes], { type: mime });
+        } else {
+          // CDN URL等の通常URLの場合は従来通りfetchで取得
+          const response = await fetch(src);
+          if (!response.ok) throw new Error("Network response was not ok");
+          blob = await response.blob();
+        }
 
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
