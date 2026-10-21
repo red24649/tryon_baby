@@ -21,7 +21,14 @@ async function startFashnJob(fashnApiKey, modelImageBase64, garmentImageBase64) 
   const selectedModel = "tryon-max";
 
   const fashnInputs = {
-    model_image: modelImageBase64
+    model_image: modelImageBase64,
+    // FASHN APIでは出力形式・Base64返却の指定は inputs の中に入れる必要がある。
+    // output_format は保存ファイル拡張子(.jpg)に合わせて jpeg を指定。
+    output_format: "jpeg",
+    // 公開CDN URLではなくBase64のdata URIで直接返却させる。
+    // → 別ドメインCDNへのfetchで起きるCORSエラーを回避でき、
+    //   サーバー側の画像保持期間短縮・履歴に画像を残さない利点もある。
+    return_base64: true
   };
 
   if (selectedModel === "tryon-max") {
@@ -38,10 +45,7 @@ async function startFashnJob(fashnApiKey, modelImageBase64, garmentImageBase64) 
     },
     body: JSON.stringify({
       model_name: selectedModel,
-      inputs: fashnInputs,
-      // セキュリティ強化：公開CDN URLではなくBase64で直接返却させ、
-      // サーバー側の画像保持期間を短縮し、リクエスト履歴にも画像を残さない
-      return_base64: true
+      inputs: fashnInputs
     })
   });
 
