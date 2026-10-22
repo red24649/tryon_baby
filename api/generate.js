@@ -13,9 +13,10 @@ export const config = {
 // FASHN tryon-max には専用のフィット調整パラメータが無いため、prompt で誘導する。
 function fitStyleToPrompt(fitStyle) {
   if (fitStyle === 'loose') {
-    // ゆったり：中程度のゆとり。オーバーサイズ化は避けつつ、
-    // 体に張り付かず生地に少し余り・ドレープが見える、はっきり分かる程度のゆったり感。
-    return "wear the garment with a noticeably relaxed, roomy fit that is a bit loose on the baby, with some visible extra fabric, gentle slack and soft draping folds around the chest, waist, sleeves and hem, so the clothing does not cling to the body and has clear breathing room. Moderately loose and comfortable, but NOT extremely oversized or heavily baggy";
+    // ゆったり：しっかりゆとりのある着用感。体に張り付かず、生地が明確に余って
+    // ドレープ・たるみが出る、ゆったりとしたリラックスフィット。
+    // ただし極端にダボつく（数サイズ大きい）レベルまでは行かない手前で止める。
+    return "wear the garment with a clearly loose, roomy, relaxed fit that is one size larger than the body, with a good amount of visible extra fabric, obvious slack, loose draping and soft folds around the chest, waist, sleeves and hem. The clothing hangs loosely and comfortably away from the body with generous breathing room and does NOT cling to or show the body shape. Distinctly loose and relaxed, but still a wearable fit ? NOT extremely huge or clown-sized baggy";
   } else if (fitStyle === 'tight') {
     // じゃすと：体のラインに沿ってぴったり
     return "wear the clothing with a snug, fitted, close-to-the-body fit";
