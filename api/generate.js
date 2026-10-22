@@ -113,7 +113,9 @@ export default async function handler(req, res) {
       let armsDescription = "bare forearms clearly visible";
       let legsDescription = "bare legs clearly visible";
       let chestDescription = "";
-      let postureDescription = "sitting happily on the floor, perfectly facing forward, upright posture";
+      // おすわり（正面）：体はほぼ正面だが、顔と目線を真正面にしすぎない自然な表現。
+      const sittingFrontPosture = "sitting happily and upright on the floor, the body facing roughly towards the camera but with the head slightly tilted and the face turned just a little to one side (not perfectly frontal), and the gaze looking slightly off to the side or into the near distance rather than staring straight into the camera lens, with a relaxed natural happy expression. NOT a stiff, perfectly symmetric, straight-into-the-lens pose";
+      let postureDescription = sittingFrontPosture;
       let lightingDescription = "soft and natural lighting";
       // シーン（寝具・カメラアングル・全体構図）の記述。ポーズによって切り替える。
       // 通常（おすわり・つかまり立ち）は床＋クリーム色のラグを俯瞰しない構図、
@@ -140,10 +142,8 @@ export default async function handler(req, res) {
       if (itemType !== 'clothes') {
         outfitDescription = "a simple, perfectly plain white short-sleeve bodysuit";
         chestDescription = "a perfectly smooth, flat white fabric over the chest without any wrinkles";
-        // 雑貨・帽子のみの場合はおすわり正面が基本だが、ねんねが選ばれていればその構図を尊重する
-        if (pose !== 'lying') {
-          postureDescription = "sitting happily on the floor, perfectly facing forward, upright posture";
-        }
+        // 雑貨・帽子のみの場合も、選ばれたポーズ（上で設定済みの postureDescription）を尊重する。
+        // ポーズ未指定（おすわり正面）の場合は上のデフォルト sittingFrontPosture がそのまま使われる。
       } else {
         chestDescription = "natural fabric texture with soft, realistic folds, creases, and gentle wrinkles that give the clothing a realistic 3D volume";
         lightingDescription = "soft directional lighting highlighting the natural 3D shape and wrinkles of the fabric";
