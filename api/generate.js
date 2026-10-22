@@ -9,10 +9,25 @@ export const config = {
   },
 };
 
+// フィット感（着用感）の指定を、FASHNの prompt パラメータ用の英語指示に変換する。
+// FASHN tryon-max には専用のフィット調整パラメータが無いため、prompt で誘導する。
+function fitStyleToPrompt(fitStyle) {
+  if (fitStyle === 'loose') {
+    // ゆったり：体に張り付かず、ベビー服らしい自然なゆとりを出す
+    return "wear the clothing loosely and comfortably with a relaxed, roomy, oversized fit, with natural slack and soft drape, not tight, not clinging to the body";
+  } else if (fitStyle === 'tight') {
+    // じゃすと：体のラインに沿ってぴったり
+    return "wear the clothing with a snug, fitted, close-to-the-body fit";
+  }
+  // 標準：特に指示しない（FASHNのデフォルト挙動）
+  return "";
+}
+
 // FASHN.aiのtry-onジョブを開始する共通関数
 // modelImageBase64: ベースになるモデル画像（ベビー生成画像 or 前段の合成結果）
 // garmentImageBase64: 重ねて着せたいアイテム画像
-async function startFashnJob(fashnApiKey, modelImageBase64, garmentImageBase64) {
+// fitStyle: 着用感（'loose'＝ゆったり / 'tight'＝じゃすと / それ以外＝標準）
+async function startFashnJob(fashnApiKey, modelImageBase64, garmentImageBase64, fitStyle) {
   // =================================================================
   // ★ ここでFashn.aiのモデル（クレジット消費）を切り替えられます
   // =================================================================
@@ -30,6 +45,12 @@ async function startFashnJob(fashnApiKey, modelImageBase64, garmentImageBase64) 
     //   サーバー側の画像保持期間短縮・履歴に画像を残さない利点もある。
     return_base64: true
   };
+
+  // フィット感の指示があれば prompt に渡す（空文字＝標準はFASHNデフォルト）
+  const fitPrompt = fitStyleToPrompt(fitStyle);
+  if (fitPrompt) {
+    fashnInputs.prompt = fitPrompt;
+  }
 
   if (selectedModel === "tryon-max") {
     fashnInputs.product_image = garmentImageBase64; // maxモデル用の名前
@@ -77,7 +98,7 @@ export default async function handler(req, res) {
       // itemType === 'clothes' の場合のみ、実際の丈感に合わせたベビー画像を生成する。
       // 'bib'（雑貨）や 'hat'（帽子）が1点目の場合は、従来通りプレーンな肌着姿で生成し、
       // FASHN側でそのアイテムを重ねて着せる。
-      const { garmentImageBase64, gender, race, sleeveLength, pantsLength, itemType, pose } = req.body;
+      const { garmentImageBase64, gender, race, sleeveLength, pantsLength, itemType, pose, fitStyle } = req.body;
 
       let raceDescription = race;
       if (race === 'half-Caucasian, half-Japanese') {
@@ -181,21 +202,21 @@ export default async function handler(req, res) {
       console.log("Baby image generated successfully.");
 
       console.log("Starting Fashn.ai job (item 1)...");
-      const jobId = await startFashnJob(fashnApiKey, generatedBabyImage, garmentImageBase64);
+      const jobId = await startFashnJob(fashnApiKey, generatedBabyImage, garmentImageBase64, fitStyle);
 
       return res.status(200).json({ jobId });
     }
 
     else if (action === 'nextTryon') {
       // コーディネートの2点目以降（雑貨・帽子など）を、直前の合成結果の上に重ねて着せる工程。
-      const { modelImageBase64, garmentImageBase64 } = req.body;
+      const { modelImageBase64, garmentImageBase64, fitStyle } = req.body;
 
       if (!modelImageBase64 || !garmentImageBase64) {
         return res.status(400).json({ error: 'modelImageBase64 と garmentImageBase64 が必要です。' });
       }
 
       console.log("Starting Fashn.ai job (next item)...");
-      const jobId = await startFashnJob(fashnApiKey, modelImageBase64, garmentImageBase64);
+      const jobId = await startFashnJob(fashnApiKey, modelImageBase64, garmentImageBase64, fitStyle);
 
       return res.status(200).json({ jobId });
     }
