@@ -113,8 +113,8 @@ export default async function handler(req, res) {
       let armsDescription = "bare forearms clearly visible";
       let legsDescription = "bare legs clearly visible";
       let chestDescription = "";
-      // おすわり（正面）：体はほぼ正面だが、顔と目線を真正面にしすぎない自然な表現。
-      const sittingFrontPosture = "sitting happily and upright on the floor, the body facing roughly towards the camera but with the head slightly tilted and the face turned just a little to one side (not perfectly frontal), and the gaze looking slightly off to the side or into the near distance rather than staring straight into the camera lens, with a relaxed natural happy expression. NOT a stiff, perfectly symmetric, straight-into-the-lens pose";
+      // おすわり（正面）：体はほぼ正面だが、上半身を少し斜めに向け、背中を軽くリラックスさせた自然な表現。
+      const sittingFrontPosture = "sitting happily on the floor in a relaxed, natural, candid baby posture. The body is turned very slightly to one side (a gentle 3/4 angle rather than squared perfectly frontal to the camera), with the upper body and shoulders relaxed and the back softly and naturally rounded in a comfortable baby slouch (NOT a stiff, bolt-upright, perfectly straight spine). The head is slightly tilted and the face is turned just a little to one side (not perfectly frontal), and the gaze looks slightly off to the side or into the near distance rather than staring straight into the camera lens, with a relaxed natural happy expression. Soft, loose, slightly asymmetric arms and legs. Absolutely NOT a stiff, rigid, perfectly symmetric, straight-backed, straight-into-the-lens pose";
       let postureDescription = sittingFrontPosture;
       let lightingDescription = "soft and natural lighting";
       // シーン（寝具・カメラアングル・全体構図）の記述。ポーズによって切り替える。
