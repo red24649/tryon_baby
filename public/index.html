@@ -91,6 +91,25 @@
       </div>
     </div>
 
+    <!-- 着用感（フィット感）選択 -->
+    <div class="mb-8">
+      <label class="block text-sm font-bold text-gray-800 mb-3">&#x1F457; 着用感（フィット感）</label>
+      <div class="grid grid-cols-3 gap-3 radio-group">
+        <div>
+          <input type="radio" name="fitStyle" value="tight" id="fitTight" class="sr-only">
+          <label for="fitTight" class="block w-full px-2">じゃすと<br><span class="text-xs font-normal">(ぴったり)</span></label>
+        </div>
+        <div>
+          <input type="radio" name="fitStyle" value="standard" id="fitStandard" class="sr-only" checked>
+          <label for="fitStandard" class="block w-full px-2">標準</label>
+        </div>
+        <div>
+          <input type="radio" name="fitStyle" value="loose" id="fitLoose" class="sr-only">
+          <label for="fitLoose" class="block w-full px-2">ゆったり<br><span class="text-xs font-normal">(ゆとり)</span></label>
+        </div>
+      </div>
+    </div>
+
     <!-- 赤ちゃんの特徴選択 -->
     <div class="mb-8">
       <label class="block text-sm font-bold text-gray-800 mb-3">&#x2462; ベビーモデル選択</label>
@@ -458,6 +477,7 @@
       const sLen = slots.wear.dataUri ? sleeveLength.value : '';
       const pLen = slots.wear.dataUri ? pantsLength.value : '';
       const pose = document.querySelector('input[name="pose"]:checked').value;
+      const fitStyle = document.querySelector('input[name="fitStyle"]:checked').value;
 
       generateBtn.disabled = true;
       loading.classList.remove('hidden');
@@ -486,7 +506,8 @@
             sleeveLength: sLen,
             pantsLength: pLen,
             itemType: first.type,
-            pose
+            pose,
+            fitStyle
           })
         });
 
@@ -522,7 +543,8 @@
             body: JSON.stringify({
               action: 'nextTryon',
               modelImageBase64: currentImage,
-              garmentImageBase64: processed
+              garmentImageBase64: processed,
+              fitStyle
             })
           });
 
