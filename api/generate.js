@@ -115,8 +115,9 @@ export default async function handler(req, res) {
       let armsDescription = "bare forearms clearly visible";
       let legsDescription = "bare legs clearly visible";
       let chestDescription = "";
-      // おすわり（正面）：体はほぼ正面だが、上半身を少し斜めに向け、背中を軽くリラックスさせた自然な表現。
-      const sittingFrontPosture = "sitting happily on the floor in a relaxed, natural, candid baby posture. The body is turned very slightly to one side (a gentle 3/4 angle rather than squared perfectly frontal to the camera), with the upper body and shoulders relaxed and the back softly and naturally rounded in a comfortable baby slouch (NOT a stiff, bolt-upright, perfectly straight spine). The head is slightly tilted and the face is turned just a little to one side (not perfectly frontal), and the gaze looks slightly off to the side or into the near distance rather than staring straight into the camera lens, with a relaxed natural happy expression. Soft, loose, slightly asymmetric arms and legs. Absolutely NOT a stiff, rigid, perfectly symmetric, straight-backed, straight-into-the-lens pose";
+      // おすわり（正面）：上半身を明確に斜めに向け、背中を軽く丸めたリラックスした自然な姿勢。
+      // 「真正面・背筋ピン」に戻りやすいため、斜め向き・猫背を強めに指示し、否定も前に出す。
+      const sittingFrontPosture = "sitting on the floor in a relaxed, natural, candid baby posture ? crucially NOT squared perfectly frontal and NOT sitting bolt-upright with a straight spine. The upper body and torso are clearly turned to one side at a comfortable 3/4 angle (one shoulder a bit closer to the camera than the other), the shoulders are loose and relaxed, and the back is gently and naturally rounded in a soft, slightly slouched baby sitting posture (a real baby does not hold a stiff straight back). The head is slightly tilted and the face is turned a little to one side with the gaze looking slightly off to the side or into the near distance rather than straight into the lens, with a relaxed happy expression. Soft, loose, slightly asymmetric arms and legs. Absolutely NOT a stiff, rigid, symmetric, straight-backed, upright, straight-into-the-lens pose";
       let postureDescription = sittingFrontPosture;
       let lightingDescription = "soft and natural lighting";
       // シーン（寝具・カメラアングル・全体構図）の記述。ポーズによって切り替える。
